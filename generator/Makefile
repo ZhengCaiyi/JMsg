@@ -1,5 +1,7 @@
-TAGRET = jmsg_test
-DEPS = main.o
+TAGRET = jmsg_generator
+DEPS = jmsg_generator.o \
+	   jmsg_code_writer.o
+	   
 INCLUDES = -I../src/
 CFLAGS = $(INCLUDES) -g
 CXXFLAGS = $(INCLUDES) -std=c++11 -g

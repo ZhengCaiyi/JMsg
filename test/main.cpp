@@ -54,20 +54,15 @@ bool userInfoEncodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* writ
 
 	switch(field->m_id) {
 		case 1:
-		printf("writting userName,writer=%p\n", writer);
 				writer->writeStringField(field, userInfo->userName);
 				return true;
 			case 2:
-			printf("writting password,writer=%p\n", writer);
 				writer->writeStringField(field, userInfo->password);
 				return true;
 			case 3:
-				printf("writting arrary header,writer=%p\n", writer);
 				writer->writeArrayHeader(field, userInfo->addresses.size());
 			     for(int i = 0; i < userInfo->addresses.size(); i++) {
-			     	printf("encoding type:%d, name=%s\n", field->m_typeId, field->m_name.c_str());
 			     	proto->encode(field->m_typeId, writer, addressEncodeCallback,  &userInfo->addresses[i]);
-			     	//writer->writeInt(userInfo->addresses[i]);
 			     }
 			     return true;
 		     case 4:
