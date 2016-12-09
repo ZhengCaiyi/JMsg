@@ -1,0 +1,5 @@
+UserInfo = 12 {
+	userName: string = 1
+	password: string = 2
+	age: []int = 3
+}
