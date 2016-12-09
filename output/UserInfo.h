@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
+#include "AddressInfo.h"
 using namespace std;
 class JMsgWriter;
 class JMsgReader;
@@ -12,4 +13,4 @@ struct UserInfo {
    int age;
    void encode(JMsgProto* proto, JMsgWriter* writer);
    void decode(JMsgProto* proto, JMsgReader* reader);
-}
+};

@@ -8,6 +8,13 @@ JMsgReader::JMsgReader(unsigned char* buf, int len) {
 	m_cur = m_buf;
 }
 
+int JMsgReader::peekMessageTypeId() {
+	int sizeLen = 0;
+	int size = jMsgDecodeSize(m_cur, &sizeLen);
+	return size;
+}
+
+
 int JMsgReader::readMessageTypeId() {
 	int sizeLen = 0;
 	int size = jMsgDecodeSize(m_cur, &sizeLen);

@@ -56,14 +56,14 @@ bool JMsgProto::encode(const std::string& typeName, JMsgWriter* writer, JMsgProt
 
 }
 
-bool JMsgProto::decode( JMsgReader* reader, JMsgProtoDecodeCallback callback, void* args) {
+int JMsgProto::decode( JMsgReader* reader, JMsgProtoDecodeCallback callback, void* args) {
 	int typeId = reader->readFieldId();
 	printf("decode read type id=%d\n", typeId);
 	JMsgType* msgType = getTypeById(typeId);
 	int fieldId = 0;
 	if(!msgType) {
 		printf("empty msg type, typeId=%d\n", typeId);
-		return false;
+		return -1;
 	}
 
 	do {
@@ -83,7 +83,7 @@ bool JMsgProto::decode( JMsgReader* reader, JMsgProtoDecodeCallback callback, vo
 
 		callback(this, field, reader, args);
 	} while(true);
-	return true;
+	return typeId;
 }
 
 JMsgType* JMsgProto::getTypeByName(const std::string& name) {

@@ -1,35 +1,35 @@
 #include "AddressInfo.h"
 #include "jmsg.h"
 
-static void onAddressInfoDecode(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
+static bool onAddressInfoDecode(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
    AddressInfo* value = (AddressInfo*)args;
    switch(field->m_id) {
    case 1: {
-      value.street = reader->readString()
+      value->street = reader->readString();
       break;
    }
    case 2: {
-      value.number = reader->readInt()
+      value->number = reader->readInt();
       break;
    }
    default:
-      break
+      break;
    }
 }
 
-static void onAddressInfoEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
+static bool onAddressInfoEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
    AddressInfo* value = (AddressInfo*)args;
    switch(field->m_id) {
    case 1: {
-      writer->writeStringField(field, value.street[i])
+      writer->writeStringField(field, value->street);
       break;
    }
    case 2: {
-      writer->writeIntField(field, value.number[i])
+      writer->writeIntField(field, value->number);
       break;
    }
    default:
-      break
+      break;
    }
 }
 void AddressInfo::encode(JMsgProto* proto, JMsgWriter* writer) {

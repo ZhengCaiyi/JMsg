@@ -17,7 +17,7 @@ public:
 	static JMsgProto*  createProto(const std::string& idlString);
 	bool encode(int typeId, JMsgWriter* writer, JMsgProtoEncodeCallback callback, void* args);
 	bool encode(const std::string& typeName, JMsgWriter* writer, JMsgProtoEncodeCallback callback, void* args);
-	bool decode(JMsgReader* reader, JMsgProtoDecodeCallback callback, void* args);
+	int decode(JMsgReader* reader, JMsgProtoDecodeCallback callback, void* args);
 	std::vector<JMsgType*>& getAllTypes() {return m_vecTypes;}
 	JMsgType* getTypeByName(const std::string& name);
 	JMsgType* getTypeById(int id);

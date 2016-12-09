@@ -49,7 +49,6 @@ void JMsgWriter::writeInt(const int value) {
 	buf[1] = (value >> 16) & 0xff;
 	buf[2] = (value >> 8) & 0xff;
 	buf[3] = value & 0xff;
-	printf("write int, buf[3]=%d", buf[3]);
 	m_buffer.append((char*)buf, 4);
 }
 

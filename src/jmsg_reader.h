@@ -4,6 +4,7 @@
 class JMsgReader {
 public:
 	JMsgReader(unsigned char* buf, int len);
+	int peekMessageTypeId();
 	int readMessageTypeId();
 	int readFieldId();
 	int readArrayLength();
