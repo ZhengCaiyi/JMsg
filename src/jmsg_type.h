@@ -2,7 +2,7 @@
 #define JMSG_TYPE_H
 #include <string>
 #include <vector>
-class JMsgField;
+#include "jmsg_field.h"
 class JMsgType {
 public:
 	int m_id;
@@ -10,6 +10,13 @@ public:
 	std::vector<JMsgField*> m_vecFields;
 
 	JMsgField* getFieldById(int fieldId);
+
+	~JMsgType() {
+		for(int i = 0; i < m_vecFields.size(); i++) {
+			JMsgField* field = m_vecFields[i];
+			delete field;
+		}
+	}
 };
 
 #endif

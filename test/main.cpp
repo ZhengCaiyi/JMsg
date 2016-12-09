@@ -6,42 +6,80 @@
 #include "jmsg_writer.h"
 #include "jmsg_reader.h"
 #include "jmsg_field.h"
- 
+
 using namespace std;
+struct AddressInfo {
+	string street;
+	int number;
+};
 
 struct UserInfo {
 	string userName;
 	string password;
-	vector<int> age;
+	vector<AddressInfo> addresses;
+	int age;
 };
 
-bool encodeCallback(JMsgField* field, JMsgWriter* writer, void* args) {
-	UserInfo* userInfo = (UserInfo*)args;
-	//printf("encodeCallback, name=%s\n", field->m_name.c_str());
+bool addressEncodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
+	AddressInfo* addressInfo = (AddressInfo*)args;
 	switch(field->m_id) {
-			case 1:
-				writer->writeFieldId(field->m_id);
-				writer->writeString(userInfo->userName);
+	case 1:
+		printf("addressEncodeCallback, setting street=%s\n", addressInfo->street.c_str());
+		writer->writeStringField(field, addressInfo->street);
+		break;
+	case 2:
+	printf("addressEncodeCallback, setting street=%d\n", addressInfo->number);
+		writer->writeIntField(field, addressInfo->number);
+		break;
+	}
+}
+
+bool addressDecodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
+	AddressInfo* addressInfo = (AddressInfo*)args;
+	printf("addressDecodeCallback,fieldId=%d, typeId=%d\n", field->m_id, field->m_typeId);
+	switch(field->m_id) {
+	case 1:
+		addressInfo->street = reader->readString();
+		printf("read street = %s\n", addressInfo->street.c_str());
+		break;
+	case 2:
+		addressInfo->number = reader->readInt();
+		printf("read number = %d\n", addressInfo->number);
+		break;
+	}
+}
+
+bool userInfoEncodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
+	UserInfo* userInfo = (UserInfo*)args;
+
+	switch(field->m_id) {
+		case 1:
+		printf("writting userName,writer=%p\n", writer);
+				writer->writeStringField(field, userInfo->userName);
 				return true;
 			case 2:
-			    writer->writeFieldId(field->m_id);
-				writer->writeString(userInfo->password);
+			printf("writting password,writer=%p\n", writer);
+				writer->writeStringField(field, userInfo->password);
 				return true;
 			case 3:
-			     writer->writeFieldId(field->m_id);
-			     writer->writeFieldId(userInfo->age.size());
-			     for(int i = 0; i < userInfo->age.size(); i++) {
-			     	writer->writeInt(userInfo->age[i]);
+				printf("writting arrary header,writer=%p\n", writer);
+				writer->writeArrayHeader(field, userInfo->addresses.size());
+			     for(int i = 0; i < userInfo->addresses.size(); i++) {
+			     	printf("encoding type:%d, name=%s\n", field->m_typeId, field->m_name.c_str());
+			     	proto->encode(field->m_typeId, writer, addressEncodeCallback,  &userInfo->addresses[i]);
+			     	//writer->writeInt(userInfo->addresses[i]);
 			     }
 			     return true;
+		     case 4:
+		     	writer->writeIntField(field, userInfo->age);
+		     	return true;
 			default:
 				return false;
 	}
 }
 
-bool decodeCallback(JMsgField* field, JMsgReader* reader, void* args) {
+bool userInfoDecodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
 	UserInfo* userInfo = (UserInfo*)args;
-	//printf("decodeCallback, name=%s\n", field->m_name.c_str());
 	switch(field->m_id) {
 			case 1:
 			{
@@ -56,10 +94,17 @@ bool decodeCallback(JMsgField* field, JMsgReader* reader, void* args) {
 			case 3:
 			{
 			     int arrayLen = reader->readArrayLength();
+			     printf("read array length:%d\n", arrayLen);
 			     for(int i = 0; i < arrayLen; i++) {
-			     	userInfo->age.push_back(reader->readInt());
+			     	AddressInfo addrInfo;
+			     	proto->decode(reader, addressDecodeCallback, &addrInfo);
+			     	userInfo->addresses.push_back(addrInfo);
 			     }
 			     return true;
+			 }
+			 case 4: {
+			 	userInfo->age = reader->readInt();
+			 	return true;
 			 }
 			default:
 				return false;
@@ -73,11 +118,19 @@ int main() {
 	UserInfo userInfoEncode;
 	UserInfo userInfoDecode;
 
+
+
 	userInfoEncode.userName = "Jacky";
-	userInfoEncode.password = "123";
-	userInfoEncode.age.push_back(1);
-	userInfoEncode.age.push_back(2);
-	vector<JMsgType*> vecTypes;
+	userInfoEncode.password = "12s3";
+	userInfoEncode.age = 129;
+	
+	for(int i = 0; i < 200; i++) {
+		AddressInfo address;
+		address.street = ""; 
+		address.number = i + 1;
+		userInfoEncode.addresses.push_back(address);
+	}
+
 	string* content = jMsgGetFileString("config1.txt");
 	JMsgProto* proto = JMsgProto::createProto(*content);
 
@@ -85,14 +138,20 @@ int main() {
 		printf("parse config file failed\n");
 	}
 
-	for(int i = 0; i < 10000000; i++) {
-		JMsgWriter writer;
-		proto->encode("UserInfo", &writer, encodeCallback, &userInfoEncode);
+	//for(int i = 0; i < 1000000; i++) {
+	JMsgWriter writer;
+	proto->encode("UserInfo", &writer, userInfoEncodeCallback, &userInfoEncode);
 
-		JMsgReader reader((unsigned char*)writer.getBuffer(), writer.getBufferLen());
-	    proto->decode(&reader, decodeCallback, &userInfoDecode);
+	JMsgReader reader((unsigned char*)writer.getBuffer(), writer.getBufferLen());
+    proto->decode(&reader, userInfoDecodeCallback, &userInfoDecode);
+	//}
+	
+	printf("decoded userName=%s, password=%s, age=%d\n", userInfoDecode.userName.c_str(), userInfoDecode.password.c_str(), userInfoDecode.age);
+	for(int i = 0; i < userInfoDecode.addresses.size(); i++) {
+	 	printf("  address %d: street=%s, number=%d\n", i, userInfoDecode.addresses[i].street.c_str(),  userInfoDecode.addresses[i].number);
 	}
-	printf("end\n");
+	delete proto;
+	delete content;
 	//printf("encoded len = %d\n", writer.getBufferLen());
 
 	//JMsgReader reader((unsigned char*)writer.getBuffer(), writer.getBufferLen());

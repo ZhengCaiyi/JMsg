@@ -1,5 +1,11 @@
 UserInfo = 12 {
 	userName: string = 1
 	password: string = 2
-	age: []int = 3
+	addresses: []AddressInfo = 3
+	age: int = 4
+}
+
+AddressInfo = 10 {
+	street: string =  1
+	number: int = 2
 }

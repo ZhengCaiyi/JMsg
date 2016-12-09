@@ -30,11 +30,20 @@ int JMsgReader::readArrayLength() {
 }
 
 int JMsgReader::readInt() {
-	return m_cur[0] << 24 + m_cur[1] << 16 + m_cur[2] <<8 + m_cur[3];
+	int val1 = m_cur[0] ? ((int)m_cur[0]) << 24 : 0;
+	int val2 = m_cur[1] ? ((int) m_cur[1]) << 16 : 0;
+	int val3 = m_cur[2] ? ((int)m_cur[2]) << 8 : 0;
+	int val4 =  m_cur[3];
+
+	int ret = val1 + val2 + val3+ val4;
+	m_cur += 4;
+	return ret;
 }
 
 bool JMsgReader::readBool() {
-	return m_cur[0] > 0;
+	bool ret = m_cur[0] > 0;
+	ret += 1;
+	return ret;
 }
 
 std::string JMsgReader::readString() {

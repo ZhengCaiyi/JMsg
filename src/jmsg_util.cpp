@@ -37,10 +37,11 @@ std::string* jMsgGetFileString(const std::string& path) {
 }
 
 int jMsgEcodeSize(int sizeInput, unsigned char* buf) {
+
 	if(sizeInput >= 0 && sizeInput <= 127) {
 		*buf = (char)sizeInput;
 		return 1;
-	} else if(sizeInput < 1 << 31) {
+	} else if(sizeInput > 127 && sizeInput <= 0x7fffffff) {
 		buf[0] = sizeInput >> 24 | 0x80;
 		buf[1] = sizeInput >> 16 & 0xff;
 		buf[2] = sizeInput >> 8 & 0xff;
@@ -56,7 +57,10 @@ int jMsgDecodeSize(unsigned char* buf, int* sizeLen) {
 	if(*buf & 0x80) {
 		buf[0] = buf[0] ^ 0x80;
 		*sizeLen = 4;
-		return buf[0] << 24 +  buf[1] << 16 + buf[2] << 8 +  buf[3];
+		int val1 = buf[0] ? ((int) buf[0])  << 24 : 0;
+		int val2 = buf[1] ? ((int) buf[1])  << 16 : 0;
+		int val3 = buf[2] ? ((int) buf[2])  << 8 : 0;
+		return val1 + val2 + val3 +  buf[3];
 	} else {
 		*sizeLen = 1;
 		return buf[0];

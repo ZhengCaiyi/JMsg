@@ -7,12 +7,15 @@ class JMsgType;
 class JMsgWriter;
 class JMsgReader;
 class JMsgField;
-typedef bool (*JMsgProtoDecodeCallback)(JMsgField* type, JMsgReader* reader, void* args);
-typedef bool (*JMsgProtoEncodeCallback)(JMsgField* type, JMsgWriter* writer, void* args);
+class JMsgProto;
+typedef bool (*JMsgProtoDecodeCallback)(JMsgProto* proto, JMsgField* type, JMsgReader* reader, void* args);
+typedef bool (*JMsgProtoEncodeCallback)(JMsgProto* proto, JMsgField* type, JMsgWriter* writer, void* args);
 class JMsgProto {
 public:
 	JMsgProto() {}
+	~JMsgProto();
 	static JMsgProto*  createProto(const std::string& idlString);
+	bool encode(int typeId, JMsgWriter* writer, JMsgProtoEncodeCallback callback, void* args);
 	bool encode(const std::string& typeName, JMsgWriter* writer, JMsgProtoEncodeCallback callback, void* args);
 	bool decode(JMsgReader* reader, JMsgProtoDecodeCallback callback, void* args);
 	std::vector<JMsgType*>& getAllTypes();

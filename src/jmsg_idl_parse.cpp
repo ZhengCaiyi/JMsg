@@ -206,15 +206,17 @@ static bool isBasicType(const string& fieldName) {
 	return false;
 }
 
+
 static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
-	set<string> setTypeNames;
+	map<string, JMsgType*> mapTypeNames;
 	set<int> setTypeIds;
 	printf("msg count=%d\n", vecMessages.size());
 	for(int i = 0; i < vecMessages.size(); i++) {
 		string& typeName = vecMessages[i]->m_typeName;
 		printf("adding %s\n", typeName.c_str());
-		if(setTypeNames.find(typeName) == setTypeNames.end()) {
-			setTypeNames.insert(typeName);
+		if(mapTypeNames.find(typeName) == mapTypeNames.end()) {
+			//setTypeNames.insert(typeName);
+			mapTypeNames[typeName] = vecMessages[i];
 		} else {
 			return false;
 		}
@@ -234,10 +236,15 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 		for(int j = 0; j < msgType->m_vecFields.size(); j++) {
 			JMsgField* field = msgType->m_vecFields[j];
 
-			if(!isBasicType(field->m_type) && 
-				(setTypeNames.find(field->m_type) == setTypeNames.end())) {
-				printf("field %s not exist\n", field->m_type.c_str());
-				return false;
+			if(!isBasicType(field->m_type)) {
+				auto iter = mapTypeNames.find(field->m_type);
+				if(iter == mapTypeNames.end()) {
+					return false;
+				} else {
+
+					field->m_typeId =  iter->second->m_id;
+					printf("set field typeid:%d\n", field->m_typeId);
+				}
 			}
 
 			if(setFieldIds.find(field->m_id) == setFieldIds.end()) {
