@@ -9,5 +9,5 @@ struct AddressInfo {
    string street;
    int number;
    void encode(JMsgProto* proto, JMsgWriter* writer);
-   void decode(JMsgProto* proto, JMsgReader* reader);
+   bool decode(JMsgProto* proto, JMsgReader* reader);
 };

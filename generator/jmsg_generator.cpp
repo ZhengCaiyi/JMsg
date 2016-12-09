@@ -48,7 +48,7 @@ void writeClassDeclare(const string& baseDir, JMsgType* type) {
 	}
 
 	writer.writeLine("void encode(JMsgProto* proto, JMsgWriter* writer);");
-	writer.writeLine("void decode(JMsgProto* proto, JMsgReader* reader);");
+	writer.writeLine("bool decode(JMsgProto* proto, JMsgReader* reader);");
 	writer.removeIndent();
 	writer.writeLine("};");
 }
@@ -181,9 +181,9 @@ void writeClassImplement(const string& baseDir, JMsgType* type) {
 	writer.removeIndent();
 	writer.writeLine("}");
 
-	writer.writeLine("void %s::decode(JMsgProto* proto, JMsgReader* reader) {", type->m_typeName.c_str());
+	writer.writeLine("bool %s::decode(JMsgProto* proto, JMsgReader* reader) {", type->m_typeName.c_str());
 	writer.addIndent();
-	writer.writeLine("proto->decode(reader, on%sDecode, this);", type->m_typeName.c_str());
+	writer.writeLine("return proto->decode(reader, on%sDecode, this) == %d;", type->m_typeName.c_str(), type->m_id);
 	writer.removeIndent();
 	writer.writeLine("}");
 

@@ -60,6 +60,6 @@ static bool onUserInfoEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* wri
 void UserInfo::encode(JMsgProto* proto, JMsgWriter* writer) {
    proto->encode(12, writer, onUserInfoEncode, this);
 }
-void UserInfo::decode(JMsgProto* proto, JMsgReader* reader) {
-   proto->decode(reader, onUserInfoDecode, this);
+bool UserInfo::decode(JMsgProto* proto, JMsgReader* reader) {
+   return proto->decode(reader, onUserInfoDecode, this) == 12;
 }

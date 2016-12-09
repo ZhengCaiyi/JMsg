@@ -35,6 +35,6 @@ static bool onAddressInfoEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* 
 void AddressInfo::encode(JMsgProto* proto, JMsgWriter* writer) {
    proto->encode(10, writer, onAddressInfoEncode, this);
 }
-void AddressInfo::decode(JMsgProto* proto, JMsgReader* reader) {
-   proto->decode(reader, onAddressInfoDecode, this);
+bool AddressInfo::decode(JMsgProto* proto, JMsgReader* reader) {
+   return proto->decode(reader, onAddressInfoDecode, this) == 10;
 }
