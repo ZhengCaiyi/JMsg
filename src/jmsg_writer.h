@@ -1,7 +1,7 @@
 #ifndef JMSG_WRITER_H
 #define JMSG_WRITER_H
 #include <string>
-struct JMsgField;
+class JMsgField;
 class JMsgWriter {
 public:
 	void writeFieldHeader(JMsgField* field);

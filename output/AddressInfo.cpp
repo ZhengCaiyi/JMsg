@@ -15,6 +15,7 @@ static bool onAddressInfoDecode(JMsgProto* proto, JMsgField* field, JMsgReader* 
    default:
       break;
    }
+   return true;
 }
 
 static bool onAddressInfoEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
@@ -31,6 +32,7 @@ static bool onAddressInfoEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* 
    default:
       break;
    }
+   return true;
 }
 void AddressInfo::encode(JMsgProto* proto, JMsgWriter* writer) {
    proto->encode(10, writer, onAddressInfoEncode, this);

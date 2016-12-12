@@ -16,7 +16,7 @@ void writeClassDeclare(const string& baseDir, JMsgType* type) {
 		return;
 	}
 
-	for(int i = 0; i < type->m_vecFields.size(); i++) {
+	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
 		JMsgField* field = type->m_vecFields[i];
 
 		if(field->m_typeId != 0 && setDeps.find(field->m_type) == setDeps.end()) {
@@ -27,7 +27,7 @@ void writeClassDeclare(const string& baseDir, JMsgType* type) {
 	writer.writeLine("#include <vector>");
 	writer.writeLine("#include <string>");
 
-	for(auto iter = setDeps.begin(); iter != setDeps.end(); iter++) {
+	for(set<string>::iterator iter = setDeps.begin(); iter != setDeps.end(); iter++) {
 		writer.writeLine("#include \"%s.h\"", iter->c_str());
 	}
 
@@ -38,7 +38,7 @@ void writeClassDeclare(const string& baseDir, JMsgType* type) {
 	writer.writeLine("struct %s {", type->m_typeName.c_str());
 	writer.addIndent();
 
-	for(int i = 0; i < type->m_vecFields.size(); i++) {
+	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
 		JMsgField* field = type->m_vecFields[i];
 		if(!field->m_isArray) {
 			writer.writeLine("%s %s;", field->m_type.c_str(), field->m_name.c_str());
@@ -70,7 +70,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type) {
 	writer.addIndent();
 	writer.writeLine("%s* value = (%s*)args;", type->m_typeName.c_str(),  type->m_typeName.c_str());
 	writer.writeLine("switch(field->m_id) {");
-	for(int i = 0; i < type->m_vecFields.size(); i++) {
+	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
 
 		JMsgField* field = type->m_vecFields[i];
 		printf("generating field:%s\n", field->m_name.c_str());
@@ -126,7 +126,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type) {
 	writer.addIndent();
 	writer.writeLine("%s* value = (%s*)args;", type->m_typeName.c_str(),  type->m_typeName.c_str());
 	writer.writeLine("switch(field->m_id) {");
-	for(int i = 0; i < type->m_vecFields.size(); i++) {
+	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
 
 		JMsgField* field = type->m_vecFields[i];
 		printf("generating field:%s\n", field->m_name.c_str());
@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
 	}
 	std::vector<JMsgType*>& types = proto->getAllTypes();
 
-	for(int i = 0; i < types.size(); i++) {
+	for(size_t i = 0; i < types.size(); i++) {
 		writeClassDeclare("../output/", types[i]);
 		writeClassImplement("../output/", types[i]);
 	}

@@ -12,7 +12,7 @@ public:
 	JMsgField* getFieldById(int fieldId);
 
 	~JMsgType() {
-		for(int i = 0; i < m_vecFields.size(); i++) {
+		for(size_t i = 0; i < m_vecFields.size(); i++) {
 			JMsgField* field = m_vecFields[i];
 			delete field;
 		}

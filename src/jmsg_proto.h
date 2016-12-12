@@ -22,7 +22,6 @@ public:
 	JMsgType* getTypeByName(const std::string& name);
 	JMsgType* getTypeById(int id);
 private:
-	//JMsgProto() {}
 	std::vector<JMsgType*> m_vecTypes;
 	std::map<std::string, int> m_mapNameToIndex;
 	std::map<int, int> m_mapIdToIndex;

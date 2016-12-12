@@ -37,7 +37,7 @@ std::string* jMsgGetFileString(const std::string& path) {
 }
 
 int jMsgEcodeSize(int sizeInput, unsigned char* buf) {
-
+	
 	if(sizeInput >= 0 && sizeInput <= 127) {
 		*buf = (char)sizeInput;
 		return 1;

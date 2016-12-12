@@ -28,6 +28,7 @@ static bool onUserInfoDecode(JMsgProto* proto, JMsgField* field, JMsgReader* rea
    default:
       break;
    }
+   return true;
 }
 
 static bool onUserInfoEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
@@ -56,6 +57,7 @@ static bool onUserInfoEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* wri
    default:
       break;
    }
+   return true;
 }
 void UserInfo::encode(JMsgProto* proto, JMsgWriter* writer) {
    proto->encode(12, writer, onUserInfoEncode, this);

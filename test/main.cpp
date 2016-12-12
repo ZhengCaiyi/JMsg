@@ -32,6 +32,7 @@ bool addressEncodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* write
 		writer->writeIntField(field, addressInfo->number);
 		break;
 	}
+	return true;
 }
 
 bool addressDecodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
@@ -47,6 +48,7 @@ bool addressDecodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reade
 		printf("read number = %d\n", addressInfo->number);
 		break;
 	}
+	return true;
 }
 
 bool userInfoEncodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
@@ -71,6 +73,7 @@ bool userInfoEncodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* writ
 			default:
 				return false;
 	}
+	return true;
 }
 
 bool userInfoDecodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
@@ -105,7 +108,7 @@ bool userInfoDecodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* read
 				return false;
 
 	}
-
+	return true;
 }
 
 

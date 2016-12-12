@@ -49,7 +49,7 @@ int JMsgReader::readInt() {
 
 bool JMsgReader::readBool() {
 	bool ret = m_cur[0] > 0;
-	ret += 1;
+	m_cur += 1;
 	return ret;
 }
 

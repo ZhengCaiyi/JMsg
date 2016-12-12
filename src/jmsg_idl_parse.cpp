@@ -37,6 +37,7 @@ static char* getCommonWord(char* data, string& word) {
 	if(!jMsgIsAlpha(*data) && !jMsgIsUnderLine(*data)) {
 		return NULL;
 	}
+
 	word.append(data, 1);
 	data++;
 	while(jMsgIsAlpha(*data) || jMsgIsDigit(*data) || jMsgIsUnderLine(*data)) {
@@ -89,7 +90,7 @@ static char* getField(char* data, JMsgField** pField) {
 	JMsgField* field = NULL;
 	bool isArray = false;
 	data = getCommonWord(data, fieldName);
-
+	
 	if(!data) {
 		return NULL;
 	}
@@ -211,11 +212,10 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 	map<string, JMsgType*> mapTypeNames;
 	set<int> setTypeIds;
 	printf("msg count=%d\n", vecMessages.size());
-	for(int i = 0; i < vecMessages.size(); i++) {
+	for(size_t i = 0; i < vecMessages.size(); i++) {
 		string& typeName = vecMessages[i]->m_typeName;
 		printf("adding %s\n", typeName.c_str());
 		if(mapTypeNames.find(typeName) == mapTypeNames.end()) {
-			//setTypeNames.insert(typeName);
 			mapTypeNames[typeName] = vecMessages[i];
 		} else {
 			return false;
@@ -229,15 +229,15 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 		}
 	}
 
-	for(int i = 0; i < vecMessages.size(); i++) {
+	for(size_t i = 0; i < vecMessages.size(); i++) {
 		JMsgType* msgType = vecMessages[i];
 		set<string> setFieldNames;
 		set<int> setFieldIds;
-		for(int j = 0; j < msgType->m_vecFields.size(); j++) {
+		for(size_t j = 0; j < msgType->m_vecFields.size(); j++) {
 			JMsgField* field = msgType->m_vecFields[j];
 
 			if(!isBasicType(field->m_type)) {
-				auto iter = mapTypeNames.find(field->m_type);
+				map<string, JMsgType*>::iterator iter = mapTypeNames.find(field->m_type);
 				if(iter == mapTypeNames.end()) {
 					return false;
 				} else {
@@ -264,12 +264,13 @@ bool jMsgIDLParse(const string& strData, std::vector<JMsgType*>& vecMessages) {
 		JMsgType* msgType = NULL;
 		data = skipEmptyChars(data);
 		data = getType(data, &msgType);
-
+		
 		if(data) {
 			vecMessages.push_back(msgType);
 		} else {
 			break;
 		}
+		data = skipEmptyChars(data);
 	} while(*data != '\0');
 
 	if(data) {
