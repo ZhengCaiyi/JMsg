@@ -165,10 +165,19 @@ extern "C" static int ldecode(lua_State* L) {
 	return 1;
 }
 
+extern "C" static int lclose(lua_State* L) {
+	JMsgProto* proto = (JMsgProto*)::lua_touserdata(L, -2);
+	lua_pop(L, 1);
+	delete proto;
+	return 0;
+}
+
+
 static const struct luaL_Reg s_functions[] = {
 	{"create", lcreate},
 	{"encode", lencode},
 	{"decode", ldecode},
+	{"close", lclose},
 	{"print", lprint},
 	{NULL, NULL}
 };
@@ -180,13 +189,12 @@ int registerLib(lua_State* L) {
 
 int main() {
 	lua_State* L = luaL_newstate();
-	//luaL_openlibs(L);
-	//lua_openlibs(L);
 	luaL_requiref(L, "jmsg", registerLib, 1);
-	int ret = luaL_dofile(L, "e:/JMsg²âÊÔ/jmsg_test.lua");
+	int ret = luaL_dofile(L, "e:/JMsg/jmsg_test.lua");
 
 	if(ret != 0) {
 		printf("Ö´ÐÐÎÄ¼þÊ§°Ü:%s\n", luaL_checkstring(L, -1));
 	}
+	lua_close(L);
 	getchar();
 }

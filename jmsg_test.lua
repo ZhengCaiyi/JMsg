@@ -5,6 +5,7 @@ UserInfo = 12 {
 	password: string = 2
 	addresses: []AddressInfo = 3
 	age: int = 4
+	sex: bool = 5
 }
 
 AddressInfo = 10 {
@@ -26,16 +27,21 @@ local data = {
 			street = "street2",
 			number = 2
 		}
-	}
+	},
+	sex = true
 }
 local encoded = jmsg.encode(proto, "UserInfo", data)
-for i = 1, 100000 do	
-	local decoded = jmsg.decode(proto, encoded)
-end
+local decoded = jmsg.decode(proto, encoded)
 jmsg.print("end test")
---jmsg.print("decoded.userName="..decoded.userName)
---jmsg.print("decoded.password="..decoded.password)
----for i = 1, #decoded.addresses do
---	jmsg.print("  address.street="..decoded.addresses[i].street)
---end
+jmsg.print("decoded.userName="..decoded.userName)
+jmsg.print("decoded.password="..decoded.password)
+for i = 1, #decoded.addresses do
+	jmsg.print("  address.street="..decoded.addresses[i].street)
+end
+if decoded.sex then
+	jmsg.print("decoded.sex=true")
+else
+	jmsg.print("decoded.sex=false")
+end
+jmsg.close(proto)
 return encoded
