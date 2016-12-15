@@ -7,13 +7,14 @@ extern "C" {
 using namespace std;
 bool encodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
 	lua_State* L = (lua_State*)args;
-	if(lua_getfield(L, -1, field->m_name.c_str()) == 0) {
+	lua_getfield(L, -1, field->m_name.c_str());
+	if (lua_isnil(L, -1)) {
 		lua_pop(L, 1);
 		return false;
 	}
 
 	if(field->m_isArray) {
-		int len = luaL_len(L, -1);
+		int len = luaL_getn(L, -1);
 		writer->writeArrayHeader(field, len);
 		
 		for(int i = 1; i <= len; i++) {
@@ -135,6 +136,33 @@ extern "C" static int lprint(lua_State* L) {
 	return 0;
 }
 
+extern "C" static int lencodeBinary(lua_State* L) {
+	JMsgWriter writer;
+	JMsgProto* proto = (JMsgProto*)::lua_touserdata(L, -3);
+	const char* typeName = luaL_checkstring(L, -2);
+	bool success = proto->encode(typeName, &writer, &encodeCallback, L);
+	lua_pop(L, 3);
+	if (success) {
+		char* data = new char[writer.getBufferLen()];
+		memcpy(data, writer.getBuffer(), writer.getBufferLen());
+
+		lua_pushlightuserdata(L, data);
+		lua_pushinteger(L, writer.getBufferLen());
+		return 2;
+	}
+	else {
+		return 0;
+	}
+
+}
+
+extern "C" static int lfreeBinary(lua_State* L) {
+	char* userData = (char*)lua_touserdata(L, -1);
+	delete userData;
+	lua_pop(L, 1);
+	return 0;
+}
+
 extern "C" static int lencode(lua_State* L) {
 	JMsgWriter writer;
 	JMsgProto* proto = (JMsgProto*)::lua_touserdata(L, -3);
@@ -161,8 +189,29 @@ extern "C" static int ldecode(lua_State* L) {
 	lua_pop(L, 2);
 	::lua_createtable(L, 0, 0);
 	::JMsgReader reader((unsigned char*)ptr, len);	
-	proto->decode(&reader, decodeCallback, L);
-	return 1;
+	int typeId = proto->decode(&reader, decodeCallback, L);
+
+	JMsgType* msgType = proto->getTypeById(typeId);
+
+	lua_pushstring(L, msgType ? msgType->m_typeName.c_str() : "");
+	return 2;
+}
+
+extern "C" static int ldecodeBinary(lua_State* L) {
+	JMsgProto* proto = (JMsgProto*)::lua_touserdata(L, -2);
+	size_t len = 0;
+	const char* ptr = (char*)lua_touserdata(L, -1);
+	if (!proto) {
+		return 0;
+	}
+	lua_pop(L, 2);
+	::lua_createtable(L, 0, 0);
+	::JMsgReader reader((unsigned char*)ptr, -1);
+
+	int typeId = proto->decode(&reader, decodeCallback, L);
+	JMsgType* msgType = proto->getTypeById(typeId);
+	lua_pushstring(L, msgType ? msgType->m_typeName.c_str() : "");
+	return 2;
 }
 
 extern "C" static int lclose(lua_State* L) {
@@ -174,19 +223,25 @@ extern "C" static int lclose(lua_State* L) {
 
 
 static const struct luaL_Reg s_functions[] = {
-	{"create", lcreate},
-	{"encode", lencode},
-	{"decode", ldecode},
-	{"close", lclose},
-	{"print", lprint},
-	{NULL, NULL}
+	{ "create", lcreate },
+	{ "encode", lencode },
+	{ "encodeBinary", lencodeBinary },
+	{ "freeBinary", lfreeBinary },
+	{ "decode", ldecode },
+	{ "decodeBinary", ldecodeBinary },
+	{ "close", lclose },
+	{ "print", lprint },
+	{ NULL, NULL }
 };
 
-int registerLib(lua_State* L) {	
-	luaL_newlib(L, s_functions);
+int JMsgRegisterLua(lua_State* L) {	
+	luaL_register(L, "jmsg", s_functions);
+	//lua_register(L, "jmsg", s_functions);
+	//luaL_newlib(L, s_functions);
 	return 1;
 }
 
+/*
 int main() {
 	lua_State* L = luaL_newstate();
 	luaL_requiref(L, "jmsg", registerLib, 1);
@@ -197,4 +252,4 @@ int main() {
 	}
 	lua_close(L);
 	getchar();
-}
+	}*/

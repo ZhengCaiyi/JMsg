@@ -225,6 +225,7 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 		if(setTypeIds.find(vecMessages[i]->m_id) == setTypeIds.end()) {
 			setTypeIds.insert(vecMessages[i]->m_id);
 		} else {
+
 			return false;
 		}
 	}
@@ -239,6 +240,7 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 			if(!isBasicType(field->m_type)) {
 				map<string, JMsgType*>::iterator iter = mapTypeNames.find(field->m_type);
 				if(iter == mapTypeNames.end()) {
+					printf("type %s not found\n", field->m_type.c_str());
 					return false;
 				} else {
 

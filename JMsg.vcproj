@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="JMsg"
 	ProjectGUID="{50B9ABA2-0C6A-4461-85C8-CE6DF8DCEBBE}"
+	RootNamespace="JMsg"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="0"
 	>
@@ -336,6 +337,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\generator\jmsg_generator.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\jmsg_idl_parse.cpp"
 				>
 			</File>
@@ -417,10 +422,6 @@
 			</File>
 			<File
 				RelativePath=".\lua\src\liolib.c"
-				>
-			</File>
-			<File
-				RelativePath=".\lua_lib\ljmsg.cpp"
 				>
 			</File>
 			<File
