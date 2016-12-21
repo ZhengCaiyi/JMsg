@@ -150,7 +150,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type) {
 		writer.writeLine("case %d: {", field->m_id);
 		writer.addIndent();
 		if(field->m_isArray) {
-			writer.writeLine("int arrayLen = value->%s.size();", field->m_name.c_str());
+			writer.writeLine("int arrayLen = (int)value->%s.size();", field->m_name.c_str());
 			writer.writeLine("writer->writeArrayHeader(field, arrayLen);");
 			writer.writeLine("for(int i = 0; i < arrayLen; i++) {");
 			writer.addIndent();
@@ -202,7 +202,6 @@ void writeClassImplement(const string& baseDir, JMsgType* type) {
 	writer.writeLine("bool %s::decode(JMsgProto* proto, JMsgReader* reader) {", type->m_typeName.c_str());
 	writer.addIndent();
 	writer.writeLine("return proto->decode(reader, on%sDecode, this) == %d;", type->m_typeName.c_str(), type->m_id);
-	writer.writeLine("return true;");
 	writer.removeIndent();
 	writer.writeLine("}");
 

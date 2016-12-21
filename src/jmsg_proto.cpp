@@ -85,7 +85,7 @@ int JMsgProto::decode( JMsgReader* reader, JMsgProtoDecodeCallback callback, voi
 }
 
 JMsgType* JMsgProto::getTypeByName(const std::string& name) {
-	map<string, int>::iterator iter = m_mapNameToIndex.find(name);
+	map<string, size_t>::iterator iter = m_mapNameToIndex.find(name);
 	if(iter == m_mapNameToIndex.end()) {
 		return NULL;
 	}
@@ -93,7 +93,7 @@ JMsgType* JMsgProto::getTypeByName(const std::string& name) {
 }
 
 JMsgType* JMsgProto::getTypeById(int id) {
-	map<int, int>::iterator iter = m_mapIdToIndex.find(id);
+	map<int, size_t>::iterator iter = m_mapIdToIndex.find(id);
 	if(iter == m_mapIdToIndex.end()) {
 		return NULL;
 	}

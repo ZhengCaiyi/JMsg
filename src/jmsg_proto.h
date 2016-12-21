@@ -23,8 +23,8 @@ public:
 	JMsgType* getTypeById(int id);
 private:
 	std::vector<JMsgType*> m_vecTypes;
-	std::map<std::string, int> m_mapNameToIndex;
-	std::map<int, int> m_mapIdToIndex;
+	std::map<std::string, size_t> m_mapNameToIndex;
+	std::map<int, size_t> m_mapIdToIndex;
 };
 
 #endif

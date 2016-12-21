@@ -38,7 +38,7 @@ void JMsgWriter::writeBoolField(JMsgField* field, const bool value) {
 
 void JMsgWriter::writeString(const std::string& str) {
 	unsigned char lenBuffer[4] = {};
-	int encodedLen = jMsgEcodeSize(str.size(), lenBuffer);
+	int encodedLen = jMsgEcodeSize((int)str.size(), lenBuffer);
 	m_buffer.append((char*)lenBuffer, encodedLen);
 	m_buffer.append(str.c_str(), str.size());
 }
@@ -67,7 +67,7 @@ char* JMsgWriter::getBuffer() {
 }
 
 int JMsgWriter::getBufferLen() {
-	return m_buffer.size();
+	return (int)m_buffer.size();
 }
 
 void JMsgWriter::writeEncodedLength(int len) {

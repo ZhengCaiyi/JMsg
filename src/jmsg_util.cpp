@@ -29,7 +29,7 @@ std::string* jMsgGetFileString(const std::string& path) {
 	char readBuffer[4096] = {};
 
 	while (!feof(file)) {
-		int len = fread(readBuffer, 1, sizeof(readBuffer), file);
+		size_t len = fread(readBuffer, 1, sizeof(readBuffer), file);
 		data->append(readBuffer, len);
 	}
 	fclose(file);
@@ -53,7 +53,6 @@ int jMsgEcodeSize(int sizeInput, unsigned char* buf) {
 }
 
 int jMsgDecodeSize(unsigned char* buf, int* sizeLen) {
-	int ret = 0;
 	if(*buf & 0x80) {
 		buf[0] = buf[0] ^ 0x80;
 		*sizeLen = 4;
