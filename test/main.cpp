@@ -122,9 +122,9 @@ int main() {
 	userInfoEncode.password = "12s3";
 	userInfoEncode.age = 129;
 	
-	for(int i = 0; i < 200; i++) {
+	for(int i = 0; i < 2; i++) {
 		AddressInfo address;
-		address.street = ""; 
+		address.street = "sddf"; 
 		address.number = i + 1;
 		userInfoEncode.addresses.push_back(address);
 	}
@@ -136,24 +136,27 @@ int main() {
 		printf("parse config file failed\n");
 	}
 
-	//for(int i = 0; i < 1000000; i++) {
 	JMsgWriter writer;
 	proto->encode("UserInfo", &writer, userInfoEncodeCallback, &userInfoEncode);
+	
+	for(int i = 0; i < 1000000; i++) {
+		string jsonEncoded;
+		JMsgReader reader((unsigned char*)writer.getBuffer(), writer.getBufferLen());
+		proto->toJson(&reader, -1, jsonEncoded);
+	}
+	printf("complete");
 
-	JMsgReader reader((unsigned char*)writer.getBuffer(), writer.getBufferLen());
+/*
     proto->decode(&reader, userInfoDecodeCallback, &userInfoDecode);
-	//}
+	printf("json string=%s", jsonEncoded.c_str());
+
 	
 	printf("decoded userName=%s, password=%s, age=%d\n", userInfoDecode.userName.c_str(), userInfoDecode.password.c_str(), userInfoDecode.age);
 	for(int i = 0; i < userInfoDecode.addresses.size(); i++) {
 	 	printf("  address %d: street=%s, number=%d\n", i, userInfoDecode.addresses[i].street.c_str(),  userInfoDecode.addresses[i].number);
 	}
+	*/
 	delete proto;
 	delete content;
-	//printf("encoded len = %d\n", writer.getBufferLen());
-
-	//JMsgReader reader((unsigned char*)writer.getBuffer(), writer.getBufferLen());
-	//proto->decode(&reader, decodeCallback, &userInfoDecode);
-	
-	//printf("userName=%s, password=%s, age.count=%d\n", userInfoDecode.userName.c_str(), userInfoDecode.password.c_str(), userInfoDecode.age.size());
+	getchar();
 }

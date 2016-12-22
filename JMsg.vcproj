@@ -337,10 +337,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\generator\jmsg_generator.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\jmsg_idl_parse.cpp"
 				>
 			</File>
@@ -494,6 +490,10 @@
 			</File>
 			<File
 				RelativePath=".\lua\src\lzio.c"
+				>
+			</File>
+			<File
+				RelativePath=".\test\main.cpp"
 				>
 			</File>
 			<File

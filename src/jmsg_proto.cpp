@@ -4,6 +4,7 @@
 #include "jmsg_type.h"
 #include "jmsg_field.h"
 #include "jmsg_idl_parse.h"
+#include "jmsg_util.h"
 
 using namespace std;
 
@@ -99,4 +100,89 @@ JMsgType* JMsgProto::getTypeById(int id) {
 	}
 
 	return m_vecTypes[iter->second]; 
+}
+
+static string getQuoteString(const string& content) {
+	string ret;
+	for(size_t i = 0; i < content.size(); i++) {
+		if(content[i] == '\n') {
+			ret.append("\\n");
+		} else if(content[i] == '\r') {
+			ret.append("\\r");
+		} else if(content[i] == '\t') {
+			ret.append("\\t");
+		} else {
+			ret.append((char*)content.c_str()+ i);
+		}
+	}
+	return ret;
+}
+
+void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
+{
+	int typeId = reader->readFieldId();
+	JMsgType* msgType = getTypeById(typeId);
+	int fieldId = 0;
+	if(!msgType) {
+		return;
+	}
+	result.append("{");
+	int currentFieldCount = 0;
+
+	do {
+		fieldId = reader->readFieldId();
+		if(fieldId == 0) {		
+			break;
+		}
+
+		JMsgField* field = msgType->getFieldById(fieldId);
+
+		if(!field) {
+			break;
+		}
+
+		if(currentFieldCount > 0) {
+			result.append(",");
+		}
+		if(!field->m_isArray) {
+			if(field->m_type == "int") {
+				jMsgAppendFormatString(result, "\"%s\": %d", field->m_name.c_str(), reader->readInt());
+			} else if(field->m_type == "double") {
+				jMsgAppendFormatString(result, "\"%s\": %f", field->m_name.c_str(), reader->readDouble());
+			}  else if(field->m_type == "string") {
+
+				jMsgAppendFormatString(result, "\"%s\": \"%s\"", field->m_name.c_str(), reader->readString().c_str());
+			} else if(field->m_type == "bool") {
+				jMsgAppendFormatString(result, "\"%s\": %s", field->m_name.c_str(), reader->readBool() ? "true" : "false");
+			} else {
+				jMsgAppendFormatString(result, "\%s\": ", field->m_name.c_str());
+				toJson(reader, len, result);
+			}
+		} else {
+			int arrayCount = reader->readArrayLength();
+			jMsgAppendFormatString(result, "\"%s\": [", field->m_name.c_str());
+			bool arrayItemWritten = 0;
+			for(int i = 0; i < arrayCount; i++) {
+				if(arrayItemWritten > 0) {
+					jMsgAppendFormatString(result, ",");
+				}
+				if(field->m_type == "int") {
+					jMsgAppendFormatString(result, "%d", field->m_name.c_str(), reader->readInt());
+				} else if(field->m_type == "double") {
+					jMsgAppendFormatString(result, "%f", field->m_name.c_str(), reader->readDouble());
+				}  else if(field->m_type == "string") {
+					jMsgAppendFormatString(result, "%s", field->m_name.c_str(), getQuoteString(reader->readString()).c_str());
+				} else if(field->m_type == "bool") {
+					jMsgAppendFormatString(result, " %s", field->m_name.c_str(), reader->readBool() ? "true" : "false");
+				} else {
+					toJson(reader, len, result);
+				}
+				arrayItemWritten++;
+			}
+			jMsgAppendFormatString(result, "]");
+		}
+
+		currentFieldCount++;
+	} while(true);
+	result.append("}");
 }

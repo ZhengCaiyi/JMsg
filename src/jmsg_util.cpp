@@ -1,4 +1,5 @@
-#include "stdio.h"
+#include <stdio.h>
+#include <stdarg.h>
 #include "jmsg_util.h"
 using namespace std;
 bool jMsgIsDigit(char c) {
@@ -64,4 +65,65 @@ int jMsgDecodeSize(unsigned char* buf, int* sizeLen) {
 		*sizeLen = 1;
 		return buf[0];
 	}
+}
+
+
+std::string jMsgGetFormatString(const char * format, ...) {
+	std::string res;
+	char buf[4096] = {};
+	char* backup_buf = NULL;
+	int cur_buf_len = sizeof(buf);
+	va_list ap;
+	va_start(ap, format);
+	int len = vsnprintf(buf, cur_buf_len, format, ap);
+	va_end(ap);
+	while(len >= cur_buf_len) {
+		cur_buf_len *= 2;
+		if(backup_buf) {
+			free(backup_buf);
+		}
+
+		backup_buf = (char*)calloc(1, cur_buf_len);
+		va_start(ap, format);
+		len = vsnprintf(backup_buf, cur_buf_len, format, ap);
+		va_end(ap);
+	}
+
+
+	if(backup_buf) {
+		res =backup_buf;
+		free(backup_buf);
+	} else {
+		res = buf;
+	}
+	return res;
+}
+
+void jMsgAppendFormatString(std::string& data, const char* format, ...) {
+	char buf[4096] = {};
+	char* backup_buf = NULL;
+	int cur_buf_len = sizeof(buf);
+	va_list ap;
+	va_start(ap, format);
+	int len = vsnprintf(buf, cur_buf_len, format, ap);
+	va_end(ap);
+	while(len >= cur_buf_len) {
+		cur_buf_len *= 2;
+		if(backup_buf) {
+			free(backup_buf);
+		}
+
+		backup_buf = (char*)calloc(1, cur_buf_len);
+		va_start(ap, format);
+		len = vsnprintf(backup_buf, cur_buf_len, format, ap);
+		va_end(ap);
+	}
+
+
+	if(backup_buf) {
+		data.append(backup_buf);
+		free(backup_buf);
+	} else {
+		data.append(buf);
+	}  
 }

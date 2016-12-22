@@ -18,6 +18,7 @@ public:
 	bool encode(int typeId, JMsgWriter* writer, JMsgProtoEncodeCallback callback, void* args);
 	bool encode(const std::string& typeName, JMsgWriter* writer, JMsgProtoEncodeCallback callback, void* args);
 	int decode(JMsgReader* reader, JMsgProtoDecodeCallback callback, void* args);
+	void toJson(JMsgReader* reader, int len, std::string& result);
 	std::vector<JMsgType*>& getAllTypes() {return m_vecTypes;}
 	JMsgType* getTypeByName(const std::string& name);
 	JMsgType* getTypeById(int id);
