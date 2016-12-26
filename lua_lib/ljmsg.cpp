@@ -109,6 +109,7 @@ bool decodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void
 		double value = reader->readDouble();
 		lua_pushnumber(L, value);
 	} else {
+		::lua_createtable(L, 0, 0);
 		proto->decode(reader, decodeCallback, L);
 	}
 	lua_settable(L, -3);
