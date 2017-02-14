@@ -14,7 +14,7 @@ bool encodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void
 	}
 
 	if(field->m_isArray) {
-		int len = luaL_getn(L, -1);
+		int len = luaL_len(L, -1); //luaL_getn(L, -1);
 		writer->writeArrayHeader(field, len);
 		
 		for(int i = 1; i <= len; i++) {
@@ -236,16 +236,16 @@ static const struct luaL_Reg s_functions[] = {
 };
 
 int JMsgRegisterLua(lua_State* L) {	
-	luaL_register(L, "jmsg", s_functions);
+	//luaL_register(L, "jmsg", s_functions);
 	//lua_register(L, "jmsg", s_functions);
-	//luaL_newlib(L, s_functions);
+	luaL_newlib(L, s_functions);
 	return 1;
 }
 
-/*
+
 int main() {
 	lua_State* L = luaL_newstate();
-	luaL_requiref(L, "jmsg", registerLib, 1);
+	luaL_requiref(L, "jmsg", JMsgRegisterLua, 1);
 	int ret = luaL_dofile(L, "e:/JMsg/jmsg_test.lua");
 
 	if(ret != 0) {
@@ -253,4 +253,4 @@ int main() {
 	}
 	lua_close(L);
 	getchar();
-	}*/
+}

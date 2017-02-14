@@ -120,7 +120,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type) {
 		} else if(field->m_type == "double") {
 			writer.writeLine("value->%s = reader->readDouble();", field->m_name.c_str());
 		}else if(field->m_typeId != 0) {
-			writer.writeLine("value->%s.decode(reader);", field->m_name.c_str());
+			writer.writeLine("value->%s.decode(proto, reader);", field->m_name.c_str());
 		}
 		writer.writeLine("break;");
 		writer.removeIndent();
@@ -176,6 +176,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type) {
 		} else if(field->m_type == "double") {
 			writer.writeLine("writer->writeDoubleField(field, value->%s);", field->m_name.c_str());
 		} else if(field->m_typeId != 0) {
+			writer.writeLine("writer->writeFieldHeader(field);", field->m_name.c_str());
 			writer.writeLine("value->%s.encode(proto, writer);", field->m_name.c_str());
 		}
 		writer.writeLine("break;");
@@ -238,6 +239,7 @@ int main(int argc, char** argv) {
 	}
 	//string* content = //jMsgGetFileString(argv[1]);
 	const char* content = luaL_checkstring(L, -1);
+	printf("creating proto\n");
 	JMsgProto* proto = JMsgProto::createProto(content);
 
 	if(!proto) {

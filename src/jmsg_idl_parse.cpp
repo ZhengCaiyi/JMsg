@@ -15,6 +15,23 @@ static char* skipEmptyChars(char* data) {
 	return data;
 }
 
+static char* skipComment(char* data) {
+	if(*data == ';') {
+		data ++;
+		while(!jMsgIsChangeLine(*data)) {
+			data ++;
+		}
+		
+		if(data) {
+			data = skipEmptyChars(data);
+		}
+		
+	} 
+
+	
+	return data;
+}
+
 static char* getLeftBrace(char* data) {
 	if(*data == '{') {
 		data++;
@@ -89,6 +106,8 @@ static char* getField(char* data, JMsgField** pField) {
 	int fieldId = 0;
 	JMsgField* field = NULL;
 	bool isArray = false;
+
+	data = skipComment(data);
 	data = getCommonWord(data, fieldName);
 	
 	if(!data) {
@@ -120,6 +139,10 @@ static char* getField(char* data, JMsgField** pField) {
 
 	data = skipEmptyChars(data);
 
+	data = skipComment(data);
+
+	data = skipEmptyChars(data);
+
 	data = getEqual(data);
 	if(!data) {
 		return NULL;
@@ -140,19 +163,22 @@ static char* getField(char* data, JMsgField** pField) {
 	field->m_isArray = isArray;
 	field->m_id = fieldId;
 	*pField = field;
+
+	data = skipComment(data);
 	return data;
 }
 
 static char* getType(char* data, JMsgType** ppMsgType) {
 	string typeName;
 	int id;
-	
+	data = skipComment(data);
 	data = getCommonWord(data, typeName);
 	printf("gettype:%s\n", typeName.c_str());
 	if(!data) {
 		return NULL;
 	}
 	data = skipEmptyChars(data);
+	data = skipComment(data);
 	data = getEqual(data);
 	if(!data) {
 		return NULL;
@@ -171,6 +197,7 @@ static char* getType(char* data, JMsgType** ppMsgType) {
 	}
 
 	data = skipEmptyChars(data);
+	data = skipComment(data);
 	JMsgType* msgType = new JMsgType;
 	msgType->m_typeName = typeName;
 	msgType->m_id = id;
@@ -178,7 +205,7 @@ static char* getType(char* data, JMsgType** ppMsgType) {
 		
 		JMsgField* field = NULL;
 		data = getField(data, &field);
-
+		
 		if(data) {
 			msgType->m_vecFields.push_back(field);
 		} else {
@@ -263,6 +290,7 @@ bool jMsgIDLParse(const string& strData, std::vector<JMsgType*>& vecMessages) {
 	do {
 		JMsgType* msgType = NULL;
 		data = skipEmptyChars(data);
+		data = skipComment(data);
 		data = getType(data, &msgType);
 		
 		if(data) {

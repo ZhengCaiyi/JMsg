@@ -127,3 +127,8 @@ void jMsgAppendFormatString(std::string& data, const char* format, ...) {
 		data.append(buf);
 	}  
 }
+
+bool jMsgIsChangeLine( char c )
+{
+	return c == '\n' || c == '\r';    
+}
