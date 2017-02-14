@@ -16,7 +16,7 @@ static char* skipEmptyChars(char* data) {
 }
 
 static char* skipComment(char* data) {
-	if(*data == ';') {
+	while(data && *data == ';') {
 		data ++;
 		while(!jMsgIsChangeLine(*data)) {
 			data ++;
