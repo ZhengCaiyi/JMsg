@@ -1,3 +1,5 @@
+#ifndef UserInfo_h
+#define UserInfo_h
 #include <stdio.h>
 #include <vector>
 #include <string>
@@ -11,6 +13,8 @@ struct UserInfo {
    string password;
    std::vector<AddressInfo> addresses;
    int age;
+   bool sex;
    void encode(JMsgProto* proto, JMsgWriter* writer);
    bool decode(JMsgProto* proto, JMsgReader* reader);
 };
+#endif

@@ -4,17 +4,18 @@
 class JMsgReader {
 public:
 	JMsgReader(unsigned char* buf, int len);
-	int peekMessageTypeId();
-	int readMessageTypeId();
-	int readFieldId();
-	int readArrayLength();
-	int readInt();
-	bool readBool();
-	std::string readString();
-	double readDouble();
+	int peekMessageTypeId(bool& isSuccess);
+	int readMessageTypeId(bool& isSuccess);
+	int readFieldId(bool& isSuccess);
+	int readArrayLength(bool& isSuccess);
+	int readInt(bool& isSuccess);
+	bool readBool(bool& isSuccess);
+	std::string readString(bool& isSuccess);
+	double readDouble(bool& isSuccess);
 private:
 	unsigned char* m_buf;
 	int m_len;
 	unsigned char* m_cur;
+	unsigned char* m_endPtr;
 };
 #endif

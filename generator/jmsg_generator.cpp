@@ -84,43 +84,46 @@ void writeClassImplement(const string& baseDir, JMsgType* type) {
 	// start decode
 	writer.writeLine("static bool on%sDecode(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {", type->m_typeName.c_str());
 	writer.addIndent();
+	writer.writeLine("bool isSuccess = false;");
 	writer.writeLine("%s* value = (%s*)args;", type->m_typeName.c_str(),  type->m_typeName.c_str());
 	writer.writeLine("switch(field->m_id) {");
 	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
-
 		JMsgField* field = type->m_vecFields[i];
 		printf("generating field:%s\n", field->m_name.c_str());
 		writer.writeLine("case %d: {", field->m_id);
 		writer.addIndent();
+		
 		if(field->m_isArray) {
-			writer.writeLine("int arrayLen = reader->readArrayLength();");
+			writer.writeLine("int arrayLen = reader->readArrayLength(isSuccess);");
+			writer.writeLine("if(!isSuccess) break;");
 			writer.writeLine("for(int i = 0; i < arrayLen; i++) {");
 			writer.addIndent();
 			 if(field->m_type == "string") {
-				writer.writeLine("value->%s.push_back(reader->readString());", field->m_name.c_str());
+				writer.writeLine("value->%s.push_back(reader->readString(isSuccess));", field->m_name.c_str());
 			} else if(field->m_type == "int") {
-				writer.writeLine("value->%s.push_back(reader->readInt());", field->m_name.c_str());
+				writer.writeLine("value->%s.push_back(reader->readInt(isSuccess));", field->m_name.c_str());
 			} else if(field->m_type == "bool") {
-				writer.writeLine("value->%s.push_back(reader->readBool());", field->m_name.c_str());
+				writer.writeLine("value->%s.push_back(reader->readBool(isSuccess));", field->m_name.c_str());
 			} else if(field->m_type == "double"){
-				writer.writeLine("value->%s.push_back(reader->readDouble());", field->m_name.c_str());
+				writer.writeLine("value->%s.push_back(reader->readDouble(isSuccess));", field->m_name.c_str());
 			} else if(field->m_typeId != 0) {
 				writer.writeLine("%s item;", field->m_type.c_str());
-				writer.writeLine("item.decode(proto, reader);");
+				writer.writeLine("isSuccess = item.decode(proto, reader);");
+				writer.writeLine("if(!isSuccess) break;");
 				writer.writeLine("value->%s.push_back(item);", field->m_name.c_str());
 			} 
 			writer.removeIndent();
 			writer.writeLine("}");
 		} else if(field->m_type == "string") {
-			writer.writeLine("value->%s = reader->readString();", field->m_name.c_str());
+			writer.writeLine("value->%s = reader->readString(isSuccess);", field->m_name.c_str());
 		} else if(field->m_type == "bool") {
-			writer.writeLine("value->%s = reader->readBool();", field->m_name.c_str());
+			writer.writeLine("value->%s = reader->readBool(isSuccess);", field->m_name.c_str());
 		} else if(field->m_type == "int") {
-			writer.writeLine("value->%s = reader->readInt();", field->m_name.c_str());
+			writer.writeLine("value->%s = reader->readInt(isSuccess);", field->m_name.c_str());
 		} else if(field->m_type == "double") {
-			writer.writeLine("value->%s = reader->readDouble();", field->m_name.c_str());
+			writer.writeLine("value->%s = reader->readDouble(isSuccess);", field->m_name.c_str());
 		}else if(field->m_typeId != 0) {
-			writer.writeLine("value->%s.decode(proto, reader);", field->m_name.c_str());
+			writer.writeLine("isSuccess = value->%s.decode(proto, reader);", field->m_name.c_str());
 		}
 		writer.writeLine("break;");
 		writer.removeIndent();
@@ -133,7 +136,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type) {
 	writer.writeLine("break;");
 	writer.removeIndent();
 	writer.writeLine("}");
-	writer.writeLine("return true;");
+	writer.writeLine("return isSuccess;");
 	writer.removeIndent();
 	writer.writeLine("}");
 	writer.writeLine("");

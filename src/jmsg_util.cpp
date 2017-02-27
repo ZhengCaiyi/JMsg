@@ -53,8 +53,13 @@ int jMsgEcodeSize(int sizeInput, unsigned char* buf) {
 	}
 }
 
-int jMsgDecodeSize(unsigned char* buf, int* sizeLen) {
+int jMsgDecodeSize(unsigned char* buf, int* sizeLen, unsigned char* endPtr) {
 	if(*buf & 0x80) {
+
+		if(endPtr - buf < 4) {
+			return -1;
+		}
+
 		buf[0] = buf[0] ^ 0x80;
 		*sizeLen = 4;
 		int val1 = buf[0] ? ((int) buf[0])  << 24 : 0;
@@ -62,6 +67,10 @@ int jMsgDecodeSize(unsigned char* buf, int* sizeLen) {
 		int val3 = buf[2] ? ((int) buf[2])  << 8 : 0;
 		return val1 + val2 + val3 +  buf[3];
 	} else {
+
+		if(endPtr - buf < 1) {
+			return -1;
+		}
 		*sizeLen = 1;
 		return buf[0];
 	}

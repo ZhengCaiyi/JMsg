@@ -1,3 +1,5 @@
+#ifndef AddressInfo_h
+#define AddressInfo_h
 #include <stdio.h>
 #include <vector>
 #include <string>
@@ -11,3 +13,4 @@ struct AddressInfo {
    void encode(JMsgProto* proto, JMsgWriter* writer);
    bool decode(JMsgProto* proto, JMsgReader* reader);
 };
+#endif

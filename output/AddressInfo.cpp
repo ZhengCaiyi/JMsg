@@ -2,20 +2,21 @@
 #include "jmsg.h"
 
 static bool onAddressInfoDecode(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
+   bool isSuccess = false;
    AddressInfo* value = (AddressInfo*)args;
    switch(field->m_id) {
    case 1: {
-      value->street = reader->readString();
+      value->street = reader->readString(isSuccess);
       break;
    }
    case 2: {
-      value->number = reader->readInt();
+      value->number = reader->readInt(isSuccess);
       break;
    }
    default:
       break;
    }
-   return true;
+   return isSuccess;
 }
 
 static bool onAddressInfoEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {

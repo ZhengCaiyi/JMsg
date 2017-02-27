@@ -1,8 +1,12 @@
+;用户信息
 UserInfo = 12 {
-	userName: string = 1
-	password: string = 2
-	addresses: []AddressInfo = 3
-	age: int = 4
+	;用户名
+	userName: string = 1 ;用户名1
+	;测试
+	;测试
+	password: string = 2 ;用户名2
+	addresses: []AddressInfo = 3 ;地址列表
+	age: int = 4 ;年龄
 }
 
 AddressInfo = 10 {

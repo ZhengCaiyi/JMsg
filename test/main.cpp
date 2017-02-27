@@ -38,13 +38,14 @@ bool addressEncodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* write
 bool addressDecodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
 	AddressInfo* addressInfo = (AddressInfo*)args;
 	printf("addressDecodeCallback,fieldId=%d, typeId=%d\n", field->m_id, field->m_typeId);
+	bool isSuccess = false;
 	switch(field->m_id) {
 	case 1:
-		addressInfo->street = reader->readString();
+		addressInfo->street = reader->readString(isSuccess);
 		printf("read street = %s\n", addressInfo->street.c_str());
 		break;
 	case 2:
-		addressInfo->number = reader->readInt();
+		addressInfo->number = reader->readInt(isSuccess);
 		printf("read number = %d\n", addressInfo->number);
 		break;
 	}
@@ -53,7 +54,7 @@ bool addressDecodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reade
 
 bool userInfoEncodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
 	UserInfo* userInfo = (UserInfo*)args;
-
+	
 	switch(field->m_id) {
 		case 1:
 				writer->writeStringField(field, userInfo->userName);
@@ -78,37 +79,41 @@ bool userInfoEncodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* writ
 
 bool userInfoDecodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
 	UserInfo* userInfo = (UserInfo*)args;
+	bool isSuccess = false;
 	switch(field->m_id) {
 			case 1:
 			{
-				userInfo->userName = reader->readString();
-				return true;
+				userInfo->userName = reader->readString(isSuccess);
+				break;
 			}
 			case 2:
 			{
-			    userInfo->password = reader->readString();
-				return true;
+			    userInfo->password = reader->readString(isSuccess);
+				break;
 			}
 			case 3:
 			{
-			     int arrayLen = reader->readArrayLength();
+			     int arrayLen = reader->readArrayLength(isSuccess);
 			     printf("read array length:%d\n", arrayLen);
 			     for(int i = 0; i < arrayLen; i++) {
 			     	AddressInfo addrInfo;
-			     	proto->decode(reader, addressDecodeCallback, &addrInfo);
+					if(!proto->decode(reader, addressDecodeCallback, &addrInfo)) {
+						isSuccess = false;
+						break;
+					}
 			     	userInfo->addresses.push_back(addrInfo);
 			     }
-			     return true;
+			     break;
 			 }
 			 case 4: {
-			 	userInfo->age = reader->readInt();
-			 	return true;
+			 	userInfo->age = reader->readInt(isSuccess);
+			 	break;
 			 }
 			default:
-				return false;
+				break;
 
 	}
-	return true;
+	return isSuccess;
 }
 
 
@@ -139,12 +144,14 @@ int main() {
 	JMsgWriter writer;
 	proto->encode("UserInfo", &writer, userInfoEncodeCallback, &userInfoEncode);
 	
-	for(int i = 0; i < 1000000; i++) {
+	//for(int i = 0; i < 1000000; i++) {
 		string jsonEncoded;
 		JMsgReader reader((unsigned char*)writer.getBuffer(), writer.getBufferLen());
-		proto->toJson(&reader, -1, jsonEncoded);
-	}
-	printf("complete");
+		int decodeSuccess = proto->decode(&reader, userInfoDecodeCallback, &userInfoDecode);
+		//userInfoDecode.decode(proto, &reader);
+		//proto->toJson(&reader, -1, jsonEncoded);
+	//}
+	printf("complete, result=\n%s\n", jsonEncoded.c_str());
 
 /*
     proto->decode(&reader, userInfoDecodeCallback, &userInfoDecode);

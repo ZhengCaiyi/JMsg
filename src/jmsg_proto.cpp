@@ -60,7 +60,13 @@ bool JMsgProto::encode(const std::string& typeName, JMsgWriter* writer, JMsgProt
 }
 
 int JMsgProto::decode( JMsgReader* reader, JMsgProtoDecodeCallback callback, void* args) {
-	int typeId = reader->readFieldId();
+	bool isSuccess = false;
+	int typeId = reader->readFieldId(isSuccess);
+
+	if(!isSuccess) {
+		return -1;
+	}
+
 	JMsgType* msgType = getTypeById(typeId);
 	int fieldId = 0;
 	if(!msgType) {
@@ -68,7 +74,12 @@ int JMsgProto::decode( JMsgReader* reader, JMsgProtoDecodeCallback callback, voi
 	}
 
 	do {
-		fieldId = reader->readFieldId();
+		fieldId = reader->readFieldId(isSuccess);
+
+		if(!isSuccess) {
+			return -1;
+		}
+
 		if(fieldId == 0) {
 			
 			break;
@@ -80,7 +91,9 @@ int JMsgProto::decode( JMsgReader* reader, JMsgProtoDecodeCallback callback, voi
 			break;
 		}
 
-		callback(this, field, reader, args);
+		if(!callback(this, field, reader, args)) {
+			return -1;
+		}
 	} while(true);
 	return typeId;
 }
@@ -120,7 +133,8 @@ static string getQuoteString(const string& content) {
 
 void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 {
-	int typeId = reader->readFieldId();
+	bool isSuccess = false;
+	int typeId = reader->readFieldId(isSuccess);
 	JMsgType* msgType = getTypeById(typeId);
 	int fieldId = 0;
 	if(!msgType) {
@@ -130,7 +144,7 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 	int currentFieldCount = 0;
 
 	do {
-		fieldId = reader->readFieldId();
+		fieldId = reader->readFieldId(isSuccess);
 		if(fieldId == 0) {		
 			break;
 		}
@@ -146,20 +160,20 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 		}
 		if(!field->m_isArray) {
 			if(field->m_type == "int") {
-				jMsgAppendFormatString(result, "\"%s\": %d", field->m_name.c_str(), reader->readInt());
+				jMsgAppendFormatString(result, "\"%s\": %d", field->m_name.c_str(), reader->readInt(isSuccess));
 			} else if(field->m_type == "double") {
-				jMsgAppendFormatString(result, "\"%s\": %f", field->m_name.c_str(), reader->readDouble());
+				jMsgAppendFormatString(result, "\"%s\": %f", field->m_name.c_str(), reader->readDouble(isSuccess));
 			}  else if(field->m_type == "string") {
 
-				jMsgAppendFormatString(result, "\"%s\": \"%s\"", field->m_name.c_str(), reader->readString().c_str());
+				jMsgAppendFormatString(result, "\"%s\": \"%s\"", field->m_name.c_str(), reader->readString(isSuccess).c_str());
 			} else if(field->m_type == "bool") {
-				jMsgAppendFormatString(result, "\"%s\": %s", field->m_name.c_str(), reader->readBool() ? "true" : "false");
+				jMsgAppendFormatString(result, "\"%s\": %s", field->m_name.c_str(), reader->readBool(isSuccess) ? "true" : "false");
 			} else {
 				jMsgAppendFormatString(result, "\%s\": ", field->m_name.c_str());
 				toJson(reader, len, result);
 			}
 		} else {
-			int arrayCount = reader->readArrayLength();
+			int arrayCount = reader->readArrayLength(isSuccess);
 			jMsgAppendFormatString(result, "\"%s\": [", field->m_name.c_str());
 			bool arrayItemWritten = 0;
 			for(int i = 0; i < arrayCount; i++) {
@@ -167,13 +181,13 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 					jMsgAppendFormatString(result, ",");
 				}
 				if(field->m_type == "int") {
-					jMsgAppendFormatString(result, "%d", field->m_name.c_str(), reader->readInt());
+					jMsgAppendFormatString(result, "%d", reader->readInt(isSuccess));
 				} else if(field->m_type == "double") {
-					jMsgAppendFormatString(result, "%f", field->m_name.c_str(), reader->readDouble());
+					jMsgAppendFormatString(result, "%f", reader->readDouble(isSuccess));
 				}  else if(field->m_type == "string") {
-					jMsgAppendFormatString(result, "%s", field->m_name.c_str(), getQuoteString(reader->readString()).c_str());
+					jMsgAppendFormatString(result, "\"%s\"", getQuoteString(reader->readString(isSuccess)).c_str());
 				} else if(field->m_type == "bool") {
-					jMsgAppendFormatString(result, " %s", field->m_name.c_str(), reader->readBool() ? "true" : "false");
+					jMsgAppendFormatString(result, " %s", reader->readBool(isSuccess) ? "true" : "false");
 				} else {
 					toJson(reader, len, result);
 				}

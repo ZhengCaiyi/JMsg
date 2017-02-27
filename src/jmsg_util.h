@@ -8,7 +8,7 @@ bool jMsgIsEmptyChar(char c);
 bool jMsgIsChangeLine(char c);
 std::string* jMsgGetFileString(const std::string& path);
 int jMsgEcodeSize(int sizeInput, unsigned char* buf);
-int jMsgDecodeSize(unsigned char* buf, int* sizeLen);
+int jMsgDecodeSize(unsigned char* buf, int* sizeLen, unsigned char* endPtr);
 
 
 
