@@ -52,7 +52,7 @@ void writeClassDeclare(const string& baseDir, JMsgType* type) {
 	writer.writeLine("class JMsgProto;");
 	writer.writeLine("struct %s {", type->m_typeName.c_str());
 	writer.addIndent();
-
+	writer.writeLine("%s();", type->m_typeName.c_str());
 	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
 		JMsgField* field = type->m_vecFields[i];
 		if(!field->m_isArray) {
@@ -80,6 +80,23 @@ void writeClassImplement(const string& baseDir, JMsgType* type) {
 	writer.writeLine("#include \"jmsg.h\"");
 	writer.writeLine("");
 
+	writer.writeLine("%s::%s() {", type->m_typeName.c_str(), type->m_typeName.c_str());
+	writer.addIndent();
+	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
+		JMsgField* field = type->m_vecFields[i];
+		if(field->m_isArray) {
+			continue;
+		}
+
+		if(field->m_type == "double" || field->m_type == "int") {
+			writer.writeLine("%s = 0;", field->m_name.c_str());
+		} else if(field->m_type == "bool") {
+			writer.writeLine("%s = false;", field->m_name.c_str());
+		}
+	}
+	writer.removeIndent();
+	writer.writeLine("}");
+	writer.writeLine("");
 
 	// start decode
 	writer.writeLine("static bool on%sDecode(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {", type->m_typeName.c_str());
@@ -231,7 +248,7 @@ void writeHeaderCollect(const string& baseDir, const string& headerName, JMsgPro
 
 int main(int argc, char** argv) {
 	if(argc != 4) {
-		printf("useage:jmsg_generator ${config_file_name} $(output_path)");
+		printf("useage:jmsg_generator ${config_file_name} $(output_path) $(all_header_name)");
 		return -1;
 	}
 	lua_State* L = luaL_newstate();
