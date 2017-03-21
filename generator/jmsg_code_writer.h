@@ -22,6 +22,7 @@ public:
 	void removeIndent();
 	void writeLine(const char* format...);
 	bool open(const std::string& path);
+	void write(const char* format,...);
 private:
 	FILE* m_file;
 	int m_indent;

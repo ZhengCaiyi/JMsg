@@ -7,7 +7,7 @@
 #include "jmsg_util.h"
 
 using namespace std;
-
+static void jMsgOrderTypes(std::map<string, JMsgType*>& mapMessages, std::vector<JMsgType*>& vecMessages);
 static char* skipEmptyChars(char* data) {
 	while(jMsgIsEmptyChar(*data)) {
 		data ++;
@@ -281,7 +281,42 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 			}
 		}
 	}
+	jMsgOrderTypes(mapTypeNames, vecMessages);
 	return true;
+}
+
+static bool jMsgTypeNameInVector(std::string& typeName, std::vector<JMsgType*>& vecMessages) {
+	
+	for(int i = 0; i < vecMessages.size(); i++) {
+		if(vecMessages[i]->m_typeName == typeName) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static void jMsgAddTypeToVector(JMsgType* msgType, std::map<string, JMsgType*>& mapMessages, std::vector<JMsgType*>& vecMessages) {
+	if(jMsgTypeNameInVector(msgType->m_typeName, vecMessages)) {
+		return;
+	}
+
+	for(int i = 0; i < msgType->m_vecFields.size(); i++) {
+		JMsgField* field = msgType->m_vecFields[i];
+
+		if(isBasicType(field->m_type)) {
+			continue;
+		}
+		JMsgType* subType = mapMessages[field->m_type];
+		jMsgAddTypeToVector(subType, mapMessages, vecMessages);		
+	}
+	vecMessages.push_back(msgType);
+}
+
+static void jMsgOrderTypes(std::map<string, JMsgType*>& mapMessages, std::vector<JMsgType*>& vecMessages) {
+	vecMessages.clear();
+	for(std::map<string, JMsgType*>::iterator iter = mapMessages.begin(); iter != mapMessages.end(); iter++) {
+		jMsgAddTypeToVector(iter->second, mapMessages, vecMessages);
+	}
 }
 
 bool jMsgIDLParse(const string& strData, std::vector<JMsgType*>& vecMessages) {

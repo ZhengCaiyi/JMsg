@@ -27,3 +27,14 @@ void JMSGCodeWriter::writeLine(const char* format,...) {
   	va_end(ap);
   	fprintf(m_file, "\n");
 }
+
+void JMSGCodeWriter::write(const char* format,...) {
+	for(int i = 0; i < m_indent * TABSIZE; i++) {
+		fprintf(m_file, " ");
+	}
+
+	va_list ap;
+	va_start(ap, format);
+	vfprintf(m_file, format, ap);
+	va_end(ap);
+}
