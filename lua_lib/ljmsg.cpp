@@ -65,27 +65,27 @@ bool encodeCallback(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void
 
 bool decodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
 	lua_State* L = (lua_State*)args;
-	
+	bool isSuccess = false;
 	::lua_pushstring(L, field->m_name.c_str());
 	if(field->m_isArray) {
 		//printf("m_isArray, top=%d", lua_gettop(L));
 		::lua_newtable(L);
 
-		int len = reader->readArrayLength();
+		int len = reader->readArrayLength(isSuccess);
 
 		for(int i = 1; i <= len; i++) {
 			::lua_pushinteger(L, i);
 			if(field->m_type == "string") {
-				string value = reader->readString();
+				string value = reader->readString(isSuccess);
 				::lua_pushstring(L, value.c_str());
 			} else if(field->m_type == "int") {
-				int value = reader->readInt();
+				int value = reader->readInt(isSuccess);
 				::lua_pushinteger(L, value);
 			} else if(field->m_type == "bool") {
-				bool value = reader->readBool();
+				bool value = reader->readBool(isSuccess);
 				::lua_pushboolean(L, value);
 			} else if(field->m_type == "double") {
-				double value = reader->readDouble();
+				double value = reader->readDouble(isSuccess);
 				::lua_pushnumber(L, value);
 			} else {
 				::lua_createtable(L, 0, 0);
@@ -97,16 +97,16 @@ bool decodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void
 		}
 
 	} else if(field->m_type == "string") {
-		string value = reader->readString();
+		string value = reader->readString(isSuccess);
 		::lua_pushstring(L, value.c_str());
 	} else if(field->m_type == "int") {
-		int value = reader->readInt();
+		int value = reader->readInt(isSuccess);
 		lua_pushinteger(L, value);
 	} else if(field->m_type == "bool") {
-		bool value = reader->readBool();
+		bool value = reader->readBool(isSuccess);
 		lua_pushboolean(L, value);
 	} else if(field->m_type == "double") {
-		double value = reader->readDouble();
+		double value = reader->readDouble(isSuccess);
 		lua_pushnumber(L, value);
 	} else {
 		::lua_createtable(L, 0, 0);
