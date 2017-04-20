@@ -59,10 +59,9 @@ int jMsgDecodeSize(unsigned char* buf, int* sizeLen, unsigned char* endPtr) {
 		if(endPtr - buf < 4) {
 			return -1;
 		}
-
-		buf[0] = buf[0] ^ 0x80;
+		unsigned char firstChar =  buf[0] ^ 0x80;
 		*sizeLen = 4;
-		int val1 = buf[0] ? ((int) buf[0])  << 24 : 0;
+		int val1 = firstChar ? ((int) firstChar)  << 24 : 0;
 		int val2 = buf[1] ? ((int) buf[1])  << 16 : 0;
 		int val3 = buf[2] ? ((int) buf[2])  << 8 : 0;
 		return val1 + val2 + val3 +  buf[3];
