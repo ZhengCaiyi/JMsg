@@ -27,5 +27,4 @@ private:
 	std::map<std::string, size_t> m_mapNameToIndex;
 	std::map<int, size_t> m_mapIdToIndex;
 };
-
 #endif

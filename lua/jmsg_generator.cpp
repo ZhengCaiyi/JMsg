@@ -11,8 +11,7 @@ extern "C" {
 using namespace std;
 
 void writeClassDeclare(const string& baseDir, JMsgType* type, JMSGCodeWriter& writer) {	
-	writer.writeLine("class %s : public IJMsgEncodeable{", type->m_typeName.c_str());
-	writer.writeLine("public:");
+	writer.writeLine("struct %s {", type->m_typeName.c_str());
 	writer.addIndent();
 	writer.writeLine("%s();", type->m_typeName.c_str());
 	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
@@ -24,12 +23,11 @@ void writeClassDeclare(const string& baseDir, JMsgType* type, JMSGCodeWriter& wr
 		}
 	}
 	
-	writer.writeLine("virtual void encode(JMsgProto* proto, JMsgWriter* writer);");
-	writer.writeLine("virtual bool decode(JMsgProto* proto, JMsgReader* reader);");
+	writer.writeLine("void encode(JMsgProto* proto, JMsgWriter* writer);");
+	writer.writeLine("bool decode(JMsgProto* proto, JMsgReader* reader);");
 	
 	writer.removeIndent();
 	writer.writeLine("};");
-	writer.writeLine("");
 }
 
 void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& writer) {
@@ -246,7 +244,6 @@ int main(int argc, char** argv) {
 	headerWriter.writeLine("#include <stdio.h>");
 	headerWriter.writeLine("#include <vector>");
 	headerWriter.writeLine("#include <string>");
-	headerWriter.writeLine("#include \"jmsg_encodeable.h\"");
 	headerWriter.writeLine("using namespace std;");
 	headerWriter.writeLine("class JMsgWriter;");
 	headerWriter.writeLine("class JMsgReader;");
