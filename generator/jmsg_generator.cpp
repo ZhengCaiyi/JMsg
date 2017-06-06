@@ -36,6 +36,8 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 
 	writer.writeLine("%s::%s() {", type->m_typeName.c_str(), type->m_typeName.c_str());
 	writer.addIndent();
+	writer.writeLine("m_msgId = %d;", type->m_id);
+
 	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
 		JMsgField* field = type->m_vecFields[i];
 		if(field->m_isArray) {
@@ -187,6 +189,8 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 
 	writer.writeLine("bool %s::decode(JMsgProto* proto, JMsgReader* reader) {", type->m_typeName.c_str());
 	writer.addIndent();
+	writer.writeLine("bool success = true;");
+	writer.writeLine("m_msgId = reader->peekMessageTypeId(success);");
 	writer.writeLine("return proto->decode(reader, on%sDecode, this) == %d;", type->m_typeName.c_str(), type->m_id);
 	writer.removeIndent();
 	writer.writeLine("}");

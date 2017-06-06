@@ -169,7 +169,7 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 			} else if(field->m_type == "bool") {
 				jMsgAppendFormatString(result, "\"%s\": %s", field->m_name.c_str(), reader->readBool(isSuccess) ? "true" : "false");
 			} else {
-				jMsgAppendFormatString(result, "\%s\": ", field->m_name.c_str());
+				jMsgAppendFormatString(result, "\"%s\": ", field->m_name.c_str());
 				toJson(reader, len, result);
 			}
 		} else {

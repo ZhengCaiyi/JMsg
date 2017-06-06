@@ -113,11 +113,8 @@ std::string JMsgReader::readString(bool& isSuccess) {
 }
 
 double JMsgReader::readDouble(bool& isSuccess) {
-	isSuccess = false;
-	return 0;
-	/*
+	isSuccess = true;
 	double ret = *(double*)m_cur;
 	m_cur += sizeof(double);
-	return ret;
-	*/
+	return ret;	
 }
