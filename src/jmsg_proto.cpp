@@ -175,9 +175,9 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 		} else {
 			int arrayCount = reader->readArrayLength(isSuccess);
 			jMsgAppendFormatString(result, "\"%s\": [", field->m_name.c_str());
-			bool arrayItemWritten = 0;
+			bool arrayItemWritten = false;
 			for(int i = 0; i < arrayCount; i++) {
-				if(arrayItemWritten > 0) {
+				if(arrayItemWritten) {
 					jMsgAppendFormatString(result, ",");
 				}
 				if(field->m_type == "int") {
@@ -185,13 +185,13 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 				} else if(field->m_type == "double") {
 					jMsgAppendFormatString(result, "%f", reader->readDouble(isSuccess));
 				}  else if(field->m_type == "string") {
-					jMsgAppendFormatString(result, "\"%s\"", getQuoteString(reader->readString(isSuccess)).c_str());
+					jMsgAppendFormatString(result, "\"%s\"", reader->readString(isSuccess).c_str());
 				} else if(field->m_type == "bool") {
 					jMsgAppendFormatString(result, " %s", reader->readBool(isSuccess) ? "true" : "false");
 				} else {
 					toJson(reader, len, result);
 				}
-				arrayItemWritten++;
+				arrayItemWritten = true;
 			}
 			jMsgAppendFormatString(result, "]");
 		}
