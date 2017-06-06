@@ -189,8 +189,6 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 
 	writer.writeLine("bool %s::decode(JMsgProto* proto, JMsgReader* reader) {", type->m_typeName.c_str());
 	writer.addIndent();
-	writer.writeLine("bool success = true;");
-	writer.writeLine("m_msgId = reader->peekMessageTypeId(success);");
 	writer.writeLine("return proto->decode(reader, on%sDecode, this) == %d;", type->m_typeName.c_str(), type->m_id);
 	writer.removeIndent();
 	writer.writeLine("}");
@@ -263,7 +261,7 @@ int main(int argc, char** argv) {
 	headerWriter.removeIndent();
 	headerWriter.writeLine("};");
 	headerWriter.writeLine("");
-	headerWriter.writeLine("JMsgProto* %sCreateProto();", argv[3]);
+	headerWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen = false);", argv[3]);
 	JMSGCodeWriter cppWriter;
 	cppWriter.open(string(argv[2]) + argv[3] + ".cpp");
 	cppWriter.writeLine("#include \"%s.h\"", argv[3]);
@@ -280,7 +278,7 @@ int main(int argc, char** argv) {
 	cppWriter.write("\n");
 	cppWriter.writeLine("};");
 	cppWriter.writeLine("");
-	cppWriter.writeLine("JMsgProto* %sCreateProto() { return JMsgProto::createProto((char*)s_protoString); }", argv[3]);
+	cppWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen) { return JMsgProto::createProto((char*)s_protoString, fixFieldLen); }", argv[3]);
 	cppWriter.writeLine("");
 	for(size_t i = 0; i < types.size(); i++) {
 		writeClassDeclare(argv[2], types[i], headerWriter);

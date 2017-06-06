@@ -75,3 +75,8 @@ void JMsgWriter::writeEncodedLength(int len) {
 	int encodedLen = jMsgEcodeSize(len, lenBuffer);
 	m_buffer.append((char*)lenBuffer, encodedLen);
 }
+
+void JMsgWriter::appendBuffer( JMsgWriter* temp )
+{
+	m_buffer.append((char*)temp->getBuffer(), temp->getBufferLen());
+}

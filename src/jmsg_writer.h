@@ -18,8 +18,10 @@ public:
 	void writeBool(const bool value);
 	char* getBuffer();
 	int getBufferLen();
-private:
+	void appendBuffer(JMsgWriter* temp);
 	void writeEncodedLength(int length);
+private:
+	
 	std::string m_buffer;
 };
 #endif

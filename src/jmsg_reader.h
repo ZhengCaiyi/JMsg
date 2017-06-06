@@ -12,6 +12,8 @@ public:
 	bool readBool(bool& isSuccess);
 	std::string readString(bool& isSuccess);
 	double readDouble(bool& isSuccess);
+	int readEncodedLen(bool& isSuccess);
+	void skipLen(int len);
 private:
 	unsigned char* m_buf;
 	int m_len;

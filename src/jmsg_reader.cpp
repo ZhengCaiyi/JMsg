@@ -118,3 +118,13 @@ double JMsgReader::readDouble(bool& isSuccess) {
 	m_cur += sizeof(double);
 	return ret;	
 }
+
+int JMsgReader::readEncodedLen(bool& isSuccess)
+{
+	return readFieldId(isSuccess);
+}
+
+void JMsgReader::skipLen( int len )
+{
+	m_cur += len;
+}

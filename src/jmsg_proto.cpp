@@ -14,13 +14,13 @@ JMsgProto::~JMsgProto() {
 	}
 }
 
-JMsgProto*  JMsgProto::createProto(const string& idlString) {
+JMsgProto*  JMsgProto::createProto(const string& idlString, bool fixFieldLen) {
 	JMsgProto* proto = new JMsgProto;
+	proto->m_fixFieldLen = fixFieldLen;
 	if(!jMsgIDLParse(idlString, proto->m_vecTypes)) {
 		delete proto;
 		return NULL;
 	}
-
 
 	for(size_t i = 0; i < proto->m_vecTypes.size(); i++) {
 		proto->m_mapNameToIndex[proto->m_vecTypes[i]->m_typeName] = i;
@@ -36,8 +36,17 @@ bool JMsgProto::encode(int typeId, JMsgWriter* writer, JMsgProtoEncodeCallback c
 	}
 	writer->writeFieldHeader(msgType->m_id);
 	for(size_t i = 0; i < msgType->m_vecFields.size(); i++) {
-		JMsgField* field = msgType->m_vecFields[i];
-		callback(this, field, writer, args);
+		if (getFixFieldLen()) {
+			JMsgWriter tempWriter;
+			JMsgField* field = msgType->m_vecFields[i];
+			callback(this, field, &tempWriter, args);
+			writer->writeEncodedLength(tempWriter.getBufferLen());
+			writer->appendBuffer(&tempWriter);
+		}
+		else {
+			JMsgField* field = msgType->m_vecFields[i];
+			callback(this, field, writer, args);
+		}
 	}
 
 	// fields end with 0
@@ -52,8 +61,19 @@ bool JMsgProto::encode(const std::string& typeName, JMsgWriter* writer, JMsgProt
 	}
 	writer->writeFieldHeader(msgType->m_id);
 	for(size_t i = 0; i < msgType->m_vecFields.size(); i++) {
-		JMsgField* field = msgType->m_vecFields[i];
-		callback(this, field, writer, args);
+
+		if (getFixFieldLen()) {
+			JMsgWriter tempWriter;
+			JMsgField* field = msgType->m_vecFields[i];
+			callback(this, field, &tempWriter, args);
+			writer->writeEncodedLength(tempWriter.getBufferLen());
+			writer->appendBuffer(&tempWriter);
+		}
+		else {
+			JMsgField* field = msgType->m_vecFields[i];
+			callback(this, field, writer, args);
+		}		
+	
 	}
 	writer->writeFieldHeader(0);
 	return true;
@@ -74,25 +94,45 @@ int JMsgProto::decode( JMsgReader* reader, JMsgProtoDecodeCallback callback, voi
 	}
 
 	do {
-		fieldId = reader->readFieldId(isSuccess);
 
-		if(!isSuccess) {
-			return -1;
+		if (getFixFieldLen()) {
+			int fieldLen = reader->readEncodedLen(isSuccess);
+			if (fieldLen == 0) {
+				break;
+			}
+
+			fieldId = reader->peekMessageTypeId(isSuccess);
+
+			if (!isSuccess) {
+				return -1;
+			}
+
+			JMsgField* field = msgType->getFieldById(fieldId);
+
+			if (!field) {
+				reader->skipLen(fieldLen);
+				continue;
+			}
+			reader->readFieldId(isSuccess);
+			if (!callback(this, field, reader, args)) {
+				return -1;
+			}
 		}
+		else {
+			fieldId = reader->readFieldId(isSuccess);
 
-		if(fieldId == 0) {
-			
-			break;
-		}
+			if (fieldId == 0) {
+				break;
+			}
 
-		JMsgField* field = msgType->getFieldById(fieldId);
+			JMsgField* field = msgType->getFieldById(fieldId);
 
-		if(!field) {
-			break;
-		}
-
-		if(!callback(this, field, reader, args)) {
-			return -1;
+			if (!field) {
+				return -1;
+			}
+			if (!callback(this, field, reader, args)) {
+				return -1;
+			}
 		}
 	} while(true);
 	return typeId;
@@ -144,16 +184,39 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 	int currentFieldCount = 0;
 
 	do {
-		fieldId = reader->readFieldId(isSuccess);
-		if(fieldId == 0) {		
-			break;
+		int fieldLen = 0;
+		JMsgField* field = NULL;
+		if (getFixFieldLen()) {
+			fieldLen = reader->readEncodedLen(isSuccess);
+			if (!fieldLen) {
+				break;
+			}
 		}
 
-		JMsgField* field = msgType->getFieldById(fieldId);
-
-		if(!field) {
-			break;
+		if(getFixFieldLen()) {
+			fieldId = reader->peekMessageTypeId(isSuccess);
 		}
+		else {
+			fieldId = reader->readFieldId(isSuccess);
+		}
+		
+
+		field = msgType->getFieldById(fieldId);
+
+
+		if (getFixFieldLen()) {
+			if (!field) {
+				reader->skipLen(fieldLen);
+				continue;
+			}
+			reader->readMessageTypeId(isSuccess);
+		}
+		else {
+			if (!field) {
+				break;
+			}
+		}
+
 
 		if(currentFieldCount > 0) {
 			result.append(",");
