@@ -12,9 +12,9 @@ typedef bool (*JMsgProtoDecodeCallback)(JMsgProto* proto, JMsgField* type, JMsgR
 typedef bool (*JMsgProtoEncodeCallback)(JMsgProto* proto, JMsgField* type, JMsgWriter* writer, void* args);
 class JMsgProto {
 public:
-	JMsgProto() : m_fixFieldLen(false) {}
+	JMsgProto() : m_fixFieldLen(true) {}
 	~JMsgProto();
-	static JMsgProto*  createProto(const std::string& idlString, bool fixFieldLen = false);
+	static JMsgProto*  createProto(const std::string& idlString, bool fixFieldLen = true);
 	bool encode(int typeId, JMsgWriter* writer, JMsgProtoEncodeCallback callback, void* args);
 	bool encode(const std::string& typeName, JMsgWriter* writer, JMsgProtoEncodeCallback callback, void* args);
 	int decode(JMsgReader* reader, JMsgProtoDecodeCallback callback, void* args);

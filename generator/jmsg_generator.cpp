@@ -261,7 +261,7 @@ int main(int argc, char** argv) {
 	headerWriter.removeIndent();
 	headerWriter.writeLine("};");
 	headerWriter.writeLine("");
-	headerWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen = false);", argv[3]);
+	headerWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen = true);", argv[3]);
 	JMSGCodeWriter cppWriter;
 	cppWriter.open(string(argv[2]) + argv[3] + ".cpp");
 	cppWriter.writeLine("#include \"%s.h\"", argv[3]);

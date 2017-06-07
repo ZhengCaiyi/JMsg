@@ -120,13 +120,23 @@ bool decodeCallback(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void
 
 
 extern "C" static int lcreate(lua_State* L) {
-	const char* str = luaL_checkstring(L, -1);
-	JMsgProto* proto = JMsgProto::createProto(str);
+	int argc = lua_gettop(L);
+	
+	bool fixFieldLen = true;
+	const char* str = NULL;
+	if(argc == 2) {
+		str = luaL_checkstring(L, -2);
+		fixFieldLen = lua_toboolean(L, -1);
+	} else {
+		str = luaL_checkstring(L, -1);
+	}
+
+	JMsgProto* proto = JMsgProto::createProto(str, fixFieldLen);
 
 	if(!proto) {
 		return 0;
 	}
-	lua_pop(L, 1);
+	lua_pop(L, argc);
 	::lua_pushlightuserdata(L, proto);
 	return 1;
 }
