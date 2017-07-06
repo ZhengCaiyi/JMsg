@@ -10,7 +10,7 @@ public:
 	std::vector<JMsgField*> m_vecFields;
 
 	JMsgField* getFieldById(int fieldId);
-
+	JMsgField* getFieldByName(const std::string& fieldName);
 	~JMsgType() {
 		for(size_t i = 0; i < m_vecFields.size(); i++) {
 			JMsgField* field = m_vecFields[i];

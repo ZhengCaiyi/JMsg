@@ -287,7 +287,7 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 
 static bool jMsgTypeNameInVector(std::string& typeName, std::vector<JMsgType*>& vecMessages) {
 	
-	for(int i = 0; i < vecMessages.size(); i++) {
+	for(size_t i = 0; i < vecMessages.size(); i++) {
 		if(vecMessages[i]->m_typeName == typeName) {
 			return true;
 		}
@@ -300,7 +300,7 @@ static void jMsgAddTypeToVector(JMsgType* msgType, std::map<string, JMsgType*>& 
 		return;
 	}
 
-	for(int i = 0; i < msgType->m_vecFields.size(); i++) {
+	for(size_t i = 0; i < msgType->m_vecFields.size(); i++) {
 		JMsgField* field = msgType->m_vecFields[i];
 
 		if(isBasicType(field->m_type)) {

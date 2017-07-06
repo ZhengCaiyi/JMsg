@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
 			ConfigurationType="1"
 			>
 			<Tool
@@ -40,8 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="./src;./lua/src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;"
+				AdditionalIncludeDirectories="./src;./lua/src;./jsoncpp/include"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -61,7 +61,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="jsoncpp.lib"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(SolutionDir)$(ConfigurationName)"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -90,8 +92,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
 			ConfigurationType="1"
 			>
 			<Tool
@@ -111,8 +113,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="./src;./lua/src"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;"
+				AdditionalIncludeDirectories="./src;./lua/src;./jsoncpp/include"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -130,7 +132,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="jsoncpp.lib"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(SolutionDir)$(ConfigurationName)"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -169,15 +173,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\output\AddressInfo.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\jmsg.h"
 				>
 			</File>
 			<File
 				RelativePath=".\generator\jmsg_code_writer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\jmsg_encodeable.h"
 				>
 			</File>
 			<File
@@ -312,10 +316,6 @@
 				RelativePath=".\lua\src\lzio.h"
 				>
 			</File>
-			<File
-				RelativePath=".\output\UserInfo.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -328,10 +328,6 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
-			<File
-				RelativePath=".\output\AddressInfo.cpp"
-				>
-			</File>
 			<File
 				RelativePath=".\generator\jmsg_code_writer.cpp"
 				>
@@ -494,10 +490,6 @@
 			</File>
 			<File
 				RelativePath=".\lua\src\lzio.c"
-				>
-			</File>
-			<File
-				RelativePath=".\output\UserInfo.cpp"
 				>
 			</File>
 		</Filter>

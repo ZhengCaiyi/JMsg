@@ -263,3 +263,66 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 	} while(true);
 	result.append("}");
 }
+
+bool JMsgProto::encodeJson( int typeId, Json::Value& obj, JMsgProtoEncodeJsonCallback callback, void* args )
+{
+	JMsgType* msgType = this->getTypeById(typeId);
+
+	if(!msgType) {
+		return false;
+	}
+
+	vector<JMsgField*>& fields = msgType->m_vecFields;
+
+	for(size_t i = 0; i < fields.size(); i++) {
+		JMsgField* field = fields[i];
+
+		callback(this, field, obj, args);
+	}
+	return true;
+}
+
+bool JMsgProto::decodeJson( const string& typeName, Json::Value& obj, JMsgProtoDecodeJsonCallback callback, void* args )
+{
+	Json::Value val;
+	
+	
+	JMsgType* msgType = this->getTypeByName(typeName);
+
+	if(!msgType) {
+		return false;
+	}
+
+	Json::Value::Members mem = obj.getMemberNames(); 
+	for(size_t i = 0;i < mem.size(); i++) {
+		string& key = mem[i];
+		
+		JMsgField* field = msgType->getFieldByName(key);
+		if(!field) {
+			continue;
+		}		
+		callback(this, field, obj, args);
+	}
+	return true;
+}
+
+bool JMsgProto::decodeJson( int typeId, Json::Value& obj, JMsgProtoDecodeJsonCallback callback, void* args )
+{
+	JMsgType* msgType = this->getTypeById(typeId);
+
+	if(!msgType) {
+		return false;
+	}
+
+	Json::Value::Members mem = obj.getMemberNames(); 
+	for(size_t i = 0;i < mem.size(); i++) {
+		string& key = mem[i];
+
+		JMsgField* field = msgType->getFieldByName(key);
+		if(!field) {
+			continue;
+		}		
+		callback(this, field, obj[key], args);
+	}
+	return true;
+}
