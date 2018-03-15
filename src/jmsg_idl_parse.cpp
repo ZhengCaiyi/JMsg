@@ -201,6 +201,7 @@ static char* getType(char* data, JMsgType** ppMsgType) {
 	JMsgType* msgType = new JMsgType;
 	msgType->m_typeName = typeName;
 	msgType->m_id = id;
+	
 	while(*data != '}') {
 		
 		JMsgField* field = NULL;

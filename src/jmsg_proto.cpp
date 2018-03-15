@@ -307,7 +307,7 @@ bool JMsgProto::decodeJson( const string& typeName, Json::Value& obj, JMsgProtoD
 }
 
 bool JMsgProto::decodeJson( int typeId, Json::Value& obj, JMsgProtoDecodeJsonCallback callback, void* args )
-{
+{	
 	JMsgType* msgType = this->getTypeById(typeId);
 
 	if(!msgType) {

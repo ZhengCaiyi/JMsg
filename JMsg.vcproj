@@ -173,6 +173,14 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\generator\base64.h"
+				>
+			</File>
+			<File
+				RelativePath=".\generator\Des.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\jmsg.h"
 				>
 			</File>
@@ -316,6 +324,10 @@
 				RelativePath=".\lua\src\lzio.h"
 				>
 			</File>
+			<File
+				RelativePath=".\generator\xxtea.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -328,6 +340,14 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\generator\base64.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\generator\Des.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\generator\jmsg_code_writer.cpp"
 				>
@@ -492,7 +512,15 @@
 				RelativePath=".\lua\src\lzio.c"
 				>
 			</File>
+			<File
+				RelativePath=".\generator\xxtea.c"
+				>
+			</File>
 		</Filter>
+		<File
+			RelativePath=".\test\JMsg.exe"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

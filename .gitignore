@@ -1,0 +1,4 @@
+*.obj
+jsoncpp/x64/Release/vc90.idb
+*.idb
+*.htm

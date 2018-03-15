@@ -1,13 +1,14 @@
 #include "jmsg.h"
 #include "jmsg_util.h"
 #include "jmsg_code_writer.h"
-
 extern "C" {
 #include "lua.h"
 #include "lauxlib.h"
 }
 #include <string>
 #include <set>
+#include "xxtea.h"
+#include "Des.h"
 using namespace std;
 enum GenerateType {
 	kGenerateTypeBinary = 0,
@@ -24,6 +25,9 @@ static bool isGenerateBinary() {
 	return s_generateType == kGenerateTypeBoth || s_generateType == kGenerateTypeBinary;
 }
 
+void writeTypeDeclare(JMsgType* type, JMSGCodeWriter& writer) {
+	writer.writeLine("class %s;", type->m_typeName.c_str());
+}
 
 void writeClassDeclare(const string& baseDir, JMsgType* type, JMSGCodeWriter& writer) {	
 	writer.writeLine("class %s : public IJMsgEncodeable{", type->m_typeName.c_str());
@@ -366,11 +370,67 @@ void writeHeaderCollect(const string& baseDir, const string& headerName, JMsgPro
 		writer.writeLine("#include \"%s.h\"", types[i]->m_typeName.c_str());
 	}
 	writer.writeLine("#endif");
+} 
+
+static string getEncodedIDLString(const string& idlString) {
+	const char* key = "weile2017febsdfgt@#$@!";
+	_ServerEngine::CDes des;
+	string ret=  des.EncryptString(idlString, key);
+	string decrypted = des.DecryptString(ret, key);
+	return ret;//des.EncryptString(idlString, key);
+}
+
+static void generateEncryptedIDLFile(const string& oldFileFullName, const string& idlString) {
+	
+	string oldFilePath = JmsgGetFilePath(oldFileFullName);
+	string oldFileNameWithoutExt = JMsgGetFileNameWithoutExt(oldFileFullName);
+	string newFileName = oldFilePath + oldFileNameWithoutExt + "Encoded";
+	string outputLuaString = getEncodedIDLString(idlString);//"local a=[[" + getEncodedIDLString(idlString) + "]]\r\nreturn a";
+	FILE* file = fopen(newFileName.c_str(), "wb");
+	if(!file) {
+		return;
+	}
+
+	fwrite(outputLuaString.c_str(), 1, outputLuaString.size(), file);
+	fclose(file);
+
+	string* fileStr = jMsgGetFileString(newFileName);
+	const char* key = "weile2017febsdfgt@#$@!";
+	_ServerEngine::CDes des;
+	string decrypted = des.DecryptString(*fileStr, key);
+}
+
+// 生成go语言定义
+static void generateGoJsonDefine(const string& outputFileName, std::vector<JMsgType*>& vecTypes) {
+	JMSGCodeWriter goWritter;
+	goWritter.open(outputFileName);
+
+	goWritter.writeLine("package main");
+
+	for(size_t i = 0; i < vecTypes.size(); i++) {
+		JMsgType& msgType =*vecTypes[i];
+		
+		goWritter.writeLine("type %s struct {", msgType.m_typeName.c_str());
+		goWritter.addIndent();
+		for(size_t j = 0; j < msgType.m_vecFields.size(); j++) {
+			JMsgField msgField = *msgType.m_vecFields[j];
+
+			if(msgField.m_isArray) {
+				goWritter.writeLine("%s []%s `json:\"%s\"`", JMsgGetFirstCharBiggerCase(msgField.m_name).c_str(), msgField.m_type.c_str(), msgField.m_name.c_str());
+			} else {
+				goWritter.writeLine("%s %s `json:\"%s\"`", JMsgGetFirstCharBiggerCase(msgField.m_name).c_str(), msgField.m_type.c_str(), msgField.m_name.c_str());
+			}
+		}
+		goWritter.removeIndent();
+		goWritter.writeLine("}");
+		goWritter.writeLine("");		
+	}
 }
 
 int main(int argc, char** argv) {
 	if(argc < 4) {
-		printf("useage:jmsg_generator ${config_file_name} $(output_path) $(all_header_name) [$GenerateType], argc=%d", argc);
+		printf("useage:jmsg_generator ${config_file_name} $(output_path) $(all_header_name) [$GenerateType], argc=%d\n", argc);
+		printf("generate type=binary | json | both\n");
 		getchar();
 		return -1;
 	}	
@@ -411,6 +471,8 @@ int main(int argc, char** argv) {
 		getchar();
 		return -1;
 	}
+
+	generateEncryptedIDLFile(argv[1], content);
 	std::vector<JMsgType*>& types = proto->getAllTypes();
 
 	JMSGCodeWriter headerWriter;
@@ -465,6 +527,16 @@ int main(int argc, char** argv) {
 	}
 	headerWriter.writeLine("#endif");
 	
+	JMSGCodeWriter declareWriter;
+	declareWriter.open(string(argv[2]) + argv[3] + "Declare.h");
+	declareWriter.writeLine("#ifndef %sDeclare_h",  argv[3]);
+	declareWriter.writeLine("#define %sDeclare_h",  argv[3]);
+	for(size_t i = 0; i < types.size(); i++) {
+		writeTypeDeclare(types[i], declareWriter);
+	}
+	declareWriter.writeLine("#endif");
+
+	generateGoJsonDefine(string(argv[2]) + argv[3] + ".go", types);
 	//delete pcontent;
 	lua_close(L);
 }
