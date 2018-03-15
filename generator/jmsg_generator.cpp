@@ -44,14 +44,14 @@ void writeClassDeclare(const string& baseDir, JMsgType* type, JMSGCodeWriter& wr
 	}
 	
 	if(isGenerateBinary()) {
-		writer.writeLine("virtual void encode(JMsgProto* proto, JMsgWriter* writer);");
-		writer.writeLine("virtual bool decode(JMsgProto* proto, JMsgReader* reader);");
+		writer.writeLine("virtual void encode(JMsgWriter* writer);");
+		writer.writeLine("virtual bool decode(JMsgReader* reader);");
 	}
 	
 	
 	if(isGenerateJson()) {
-		writer.writeLine("virtual void encodeJson(JMsgProto* proto, Json::Value& val);");
-		writer.writeLine("virtual bool decodeJson(JMsgProto* proto, Json::Value& val);");
+		writer.writeLine("virtual void encodeJson( Json::Value& val);");
+		writer.writeLine("virtual bool decodeJson( Json::Value& val);");
 	}
 
 	
@@ -114,7 +114,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 						writer.writeLine("value->%s.push_back(reader->readDouble(isSuccess));", field->m_name.c_str());
 					} else if(field->m_typeId != 0) {
 						writer.writeLine("%s item;", field->m_type.c_str());
-						writer.writeLine("isSuccess = item.decode(proto, reader);");
+						writer.writeLine("isSuccess = item.decode(reader);");
 						writer.writeLine("if(!isSuccess) break;");
 						writer.writeLine("value->%s.push_back(item);", field->m_name.c_str());
 					} 
@@ -129,7 +129,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 				} else if(field->m_type == "double") {
 					writer.writeLine("value->%s = reader->readDouble(isSuccess);", field->m_name.c_str());
 				}else if(field->m_typeId != 0) {
-					writer.writeLine("isSuccess = value->%s.decode(proto, reader);", field->m_name.c_str());
+					writer.writeLine("isSuccess = value->%s.decode(reader);", field->m_name.c_str());
 				}
 				writer.writeLine("break;");
 				writer.removeIndent();
@@ -177,7 +177,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 					} else if(field->m_type == "double"){
 						writer.writeLine("writer->writeDouble(value->%s[i]);", field->m_name.c_str());
 					} else if(field->m_typeId != 0) {
-						writer.writeLine("value->%s[i].encode(proto, writer);", field->m_name.c_str());
+						writer.writeLine("value->%s[i].encode(writer);", field->m_name.c_str());
 					}
 					writer.removeIndent();
 					writer.writeLine("}");
@@ -191,7 +191,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 					writer.writeLine("writer->writeDoubleField(field, value->%s);", field->m_name.c_str());
 				} else if(field->m_typeId != 0) {
 					writer.writeLine("writer->writeFieldHeader(field);", field->m_name.c_str());
-					writer.writeLine("value->%s.encode(proto, writer);", field->m_name.c_str());
+					writer.writeLine("value->%s.encode(writer);", field->m_name.c_str());
 				}
 				writer.writeLine("break;");
 				writer.removeIndent();
@@ -209,15 +209,15 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 		writer.removeIndent();
 		writer.writeLine("}");
 		writer.writeLine("");
-		writer.writeLine("void %s::encode(JMsgProto* proto, JMsgWriter* writer) {", type->m_typeName.c_str());
+		writer.writeLine("void %s::encode(JMsgWriter* writer) {", type->m_typeName.c_str());
 		writer.addIndent();
-		writer.writeLine("proto->encode(%d, writer, on%sEncode, this);", type->m_id, type->m_typeName.c_str());
+		writer.writeLine("g_proto->encode(%d, writer, on%sEncode, this);", type->m_id, type->m_typeName.c_str());
 		writer.removeIndent();
 		writer.writeLine("}");
 		writer.writeLine("");
-		writer.writeLine("bool %s::decode(JMsgProto* proto, JMsgReader* reader) {", type->m_typeName.c_str());
+		writer.writeLine("bool %s::decode(JMsgReader* reader) {", type->m_typeName.c_str());
 		writer.addIndent();
-		writer.writeLine("return proto->decode(reader, on%sDecode, this) == %d;", type->m_typeName.c_str(), type->m_id);
+		writer.writeLine("return g_proto->decode(reader, on%sDecode, this) == %d;", type->m_typeName.c_str(), type->m_id);
 		writer.removeIndent();
 		writer.writeLine("}");
 	}
@@ -309,7 +309,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 						writer.writeLine("arrayValue.append(value->%s[i]);", field->m_name.c_str());
 					} else if(field->m_typeId != 0) {
 						writer.writeLine("Json::Value itemValue;");
-						writer.writeLine("value->%s[i].encodeJson(proto, itemValue);", field->m_name.c_str());
+						writer.writeLine("value->%s[i].encodeJson(itemValue);", field->m_name.c_str());
 						writer.writeLine("arrayValue.append(itemValue);");
 					}				
 					writer.removeIndent();
@@ -319,7 +319,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 					writer.writeLine("jsonValue[\"%s\"] = value->%s;", field->m_name.c_str(), field->m_name.c_str());
 				} else if(field->m_typeId != 0) {
 					writer.writeLine("Json::Value itemValue;");
-					writer.writeLine("value->%s.encodeJson(proto, itemValue);", field->m_name.c_str());
+					writer.writeLine("value->%s.encodeJson(itemValue);", field->m_name.c_str());
 					writer.writeLine("jsonValue[\"%s\"] = itemValue;", field->m_name.c_str());
 				}
 				writer.writeLine("break;");
@@ -338,15 +338,15 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 		writer.removeIndent();
 		writer.writeLine("}");
 		writer.writeLine("");
-		writer.writeLine("void %s::encodeJson(JMsgProto* proto, Json::Value& writer) {", type->m_typeName.c_str());
+		writer.writeLine("void %s::encodeJson( Json::Value& writer) {", type->m_typeName.c_str());
 		writer.addIndent();
-		writer.writeLine("proto->encodeJson(%d, writer, on%sEncodeJson, this);", type->m_id, type->m_typeName.c_str());
+		writer.writeLine("g_proto->encodeJson(%d, writer, on%sEncodeJson, this);", type->m_id, type->m_typeName.c_str());
 		writer.removeIndent();
 		writer.writeLine("}");
 		writer.writeLine("");
-		writer.writeLine("bool %s::decodeJson(JMsgProto* proto, Json::Value& reader) {", type->m_typeName.c_str());
+		writer.writeLine("bool %s::decodeJson( Json::Value& reader) {", type->m_typeName.c_str());
 		writer.addIndent();
-		writer.writeLine("return proto->decodeJson(%d, reader, on%sDecodeJson, this);", type->m_id, type->m_typeName.c_str());
+		writer.writeLine("return g_proto->decodeJson(%d, reader, on%sDecodeJson, this);", type->m_id, type->m_typeName.c_str());
 		writer.removeIndent();
 		writer.writeLine("}");
 	}
@@ -499,6 +499,8 @@ int main(int argc, char** argv) {
 	headerWriter.writeLine("};");
 	headerWriter.writeLine("");
 	headerWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen = true);", argv[3]);
+	headerWriter.writeLine("void %sInit();", argv[3]); 
+	headerWriter.writeLine("void %sFini();", argv[3]);
 	JMSGCodeWriter cppWriter;
 	cppWriter.open(string(argv[2]) + argv[3] + ".cpp");
 	cppWriter.writeLine("#include \"%s.h\"", argv[3]);
@@ -520,6 +522,22 @@ int main(int argc, char** argv) {
 	cppWriter.writeLine("};");
 	cppWriter.writeLine("");
 	cppWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen) { return JMsgProto::createProto((char*)s_protoString, fixFieldLen); }", argv[3]);
+	cppWriter.writeLine("static JMsgProto* g_proto = NULL;");
+	cppWriter.writeLine("void %sInit(){", argv[3]);
+	cppWriter.addIndent();
+	cppWriter.writeLine("g_proto = %sCreateProto();", argv[3]);
+	cppWriter.removeIndent();
+	cppWriter.writeLine("}");
+	cppWriter.writeLine("void %sFini(){", argv[3]);
+	cppWriter.addIndent();
+	cppWriter.writeLine("if(g_proto) {");
+	cppWriter.addIndent();
+	cppWriter.writeLine("delete g_proto;");
+	cppWriter.writeLine("g_proto = NULL;"); 
+	cppWriter.removeIndent();
+	cppWriter.writeLine("}");
+	cppWriter.removeIndent();
+	cppWriter.writeLine("}");
 	cppWriter.writeLine("");
 	for(size_t i = 0; i < types.size(); i++) {
 		writeClassDeclare(argv[2], types[i], headerWriter);
