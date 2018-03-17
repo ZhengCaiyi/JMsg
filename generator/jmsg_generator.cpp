@@ -251,7 +251,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 						writer.writeLine("value->%s.push_back(jsonValue[(int)i].isDouble() ? jsonValue[(int)i].asDouble(): 0);", field->m_name.c_str());
 					} else if(field->m_typeId != 0) {
 						writer.writeLine("%s item;", field->m_type.c_str());
-						writer.writeLine("isSuccess = item.decodeJson(proto, jsonValue[(int)i]);");
+						writer.writeLine("isSuccess = item.decodeJson(jsonValue[(int)i]);");
 						writer.writeLine("if(!isSuccess) break;");
 						writer.writeLine("value->%s.push_back(item);", field->m_name.c_str());
 					} 
@@ -266,7 +266,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 				} else if(field->m_type == "double") {
 					writer.writeLine("value->%s = jsonValue.isDouble() ? jsonValue.asDouble() : 0;", field->m_name.c_str());
 				}else if(field->m_typeId != 0) {
-					writer.writeLine("isSuccess = value->%s.decodeJson(proto, jsonValue);", field->m_name.c_str());
+					writer.writeLine("isSuccess = value->%s.decodeJson(jsonValue);", field->m_name.c_str());
 				}
 				writer.writeLine("break;");
 				writer.removeIndent();
@@ -501,6 +501,7 @@ int main(int argc, char** argv) {
 	headerWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen = true);", argv[3]);
 	headerWriter.writeLine("void %sInit();", argv[3]); 
 	headerWriter.writeLine("void %sFini();", argv[3]);
+	headerWriter.writeLine("JMsgProto* %sGetProto();", argv[3]);
 	JMSGCodeWriter cppWriter;
 	cppWriter.open(string(argv[2]) + argv[3] + ".cpp");
 	cppWriter.writeLine("#include \"%s.h\"", argv[3]);
@@ -538,6 +539,8 @@ int main(int argc, char** argv) {
 	cppWriter.writeLine("}");
 	cppWriter.removeIndent();
 	cppWriter.writeLine("}");
+	cppWriter.writeLine("");
+	cppWriter.writeLine("JMsgProto* %sGetProto() { return g_proto; }", argv[3]);
 	cppWriter.writeLine("");
 	for(size_t i = 0; i < types.size(); i++) {
 		writeClassDeclare(argv[2], types[i], headerWriter);
