@@ -427,6 +427,97 @@ static void generateGoJsonDefine(const string& outputFileName, std::vector<JMsgT
 	}
 }
 
+void generateHeaderFile(const std::string& outputPath, const string& prefix, std::vector<JMsgType*>& types) {
+	JMSGCodeWriter headerWriter;		
+	headerWriter.open(outputPath + prefix + ".h");
+	headerWriter.writeLine("#ifndef %s_h",  prefix);
+	headerWriter.writeLine("#define %s_h",  prefix);
+	headerWriter.writeLine("#include <stdio.h>");
+	headerWriter.writeLine("#include <vector>");
+	headerWriter.writeLine("#include <string>");
+	headerWriter.writeLine("#include \"json/value.h\"");
+	headerWriter.writeLine("#include \"jmsg_encodeable.h\"");
+	headerWriter.writeLine("using namespace std;");
+	headerWriter.writeLine("class JMsgWriter;");
+	headerWriter.writeLine("class JMsgReader;");
+	headerWriter.writeLine("class JMsgProto;");
+	headerWriter.writeLine("enum %sTypeIds {", prefix.c_str());
+	headerWriter.addIndent();
+	for(size_t i = 0; i < types.size(); i++) {
+		headerWriter.writeLine("k%s = %d,", types[i]->m_typeName.c_str(), types[i]->m_id);
+	};
+	headerWriter.removeIndent();
+	headerWriter.writeLine("};");
+	headerWriter.writeLine("");
+	headerWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen = true);", prefix.c_str());
+	headerWriter.writeLine("void %sInit();", prefix.c_str()); 
+	headerWriter.writeLine("void %sFini();", prefix.c_str());
+	headerWriter.writeLine("JMsgProto* %sGetProto();", prefix.c_str());
+
+	for(size_t i = 0; i < types.size(); i++) {
+		writeClassDeclare(outputPath, types[i], headerWriter);
+	}
+	headerWriter.writeLine("#endif");
+}
+
+void generateCppFile(const std::string& outputPath, const string& prefix, std::vector<JMsgType*>& types, const string& content) {
+
+	JMSGCodeWriter cppWriter;
+	cppWriter.open(outputPath + prefix + ".cpp");
+	cppWriter.writeLine("#include \"%s.h\"", prefix.c_str());
+	cppWriter.writeLine("#include \"jmsg.h\"");
+
+	if(isGenerateJson()) {
+		cppWriter.writeLine("#include \"json/value.h\"");
+	}
+
+	cppWriter.write("static const unsigned char s_protoString []= {");
+	for(size_t i = 0; i < content.size(); i++) {
+		if(i % 10 == 0) {
+			cppWriter.write("\n   ");
+		}
+		cppWriter.write("0x%02x,", (unsigned char)content[i]);		
+	}
+	cppWriter.write("0x00");
+	cppWriter.write("\n");
+	cppWriter.writeLine("};");
+	cppWriter.writeLine("");
+	cppWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen) { return JMsgProto::createProto((char*)s_protoString, fixFieldLen); }", prefix.c_str());
+	cppWriter.writeLine("static JMsgProto* g_proto = NULL;");
+	cppWriter.writeLine("void %sInit(){", prefix.c_str());
+	cppWriter.addIndent();
+	cppWriter.writeLine("g_proto = %sCreateProto();", prefix.c_str());
+	cppWriter.removeIndent();
+	cppWriter.writeLine("}");
+	cppWriter.writeLine("void %sFini(){", prefix.c_str());
+	cppWriter.addIndent();
+	cppWriter.writeLine("if(g_proto) {");
+	cppWriter.addIndent();
+	cppWriter.writeLine("delete g_proto;");
+	cppWriter.writeLine("g_proto = NULL;"); 
+	cppWriter.removeIndent();
+	cppWriter.writeLine("}");
+	cppWriter.removeIndent();
+	cppWriter.writeLine("}");
+	cppWriter.writeLine("");
+	cppWriter.writeLine("JMsgProto* %sGetProto() { return g_proto; }", prefix.c_str());
+	cppWriter.writeLine("");
+	for(size_t i = 0; i < types.size(); i++) {
+		writeClassImplement(outputPath, types[i], cppWriter);
+	}
+}
+
+void generateDeclareFile(const std::string& outputPath, const string& prefix, std::vector<JMsgType*>& types) {
+	JMSGCodeWriter declareWriter;
+	declareWriter.open(outputPath + prefix + "Declare.h");
+	declareWriter.writeLine("#ifndef %sDeclare_h",  prefix.c_str());
+	declareWriter.writeLine("#define %sDeclare_h",  prefix.c_str());
+	for(size_t i = 0; i < types.size(); i++) {
+		writeTypeDeclare(types[i], declareWriter);
+	}
+	declareWriter.writeLine("#endif");
+}
+
 int main(int argc, char** argv) {
 	if(argc < 4) {
 		printf("useage:jmsg_generator ${config_file_name} $(output_path) $(all_header_name) [$GenerateType], argc=%d\n", argc);
@@ -458,104 +549,26 @@ int main(int argc, char** argv) {
 			return -1;
 		}
 	}
-	
-	//string* pcontent = jMsgGetFileString(argv[1]);
-	//const char* content = pcontent->c_str();
+
 	const char* content = luaL_checkstring(L, -1);
 	printf("creating proto\n");
 	JMsgProto* proto = JMsgProto::createProto(content);
 	
 	if(!proto) {
-		//lua_close(L);
+		lua_close(L);
 		printf("create proto failed\n");
 		getchar();
 		return -1;
 	}
 
-	generateEncryptedIDLFile(argv[1], content);
 	std::vector<JMsgType*>& types = proto->getAllTypes();
+	string outputPath = argv[2];
+	string prefix = argv[3];
 
-	JMSGCodeWriter headerWriter;
+	generateHeaderFile(outputPath, prefix, types);
+	generateCppFile(outputPath, prefix, types, content);
+	generateDeclareFile(outputPath, prefix, types);
 	
-
-	headerWriter.open(string(argv[2]) + argv[3] + ".h");
-	headerWriter.writeLine("#ifndef %s_h",  argv[3]);
-	headerWriter.writeLine("#define %s_h",  argv[3]);
-	headerWriter.writeLine("#include <stdio.h>");
-	headerWriter.writeLine("#include <vector>");
-	headerWriter.writeLine("#include <string>");
-	headerWriter.writeLine("#include \"json/value.h\"");
-	headerWriter.writeLine("#include \"jmsg_encodeable.h\"");
-	headerWriter.writeLine("using namespace std;");
-	headerWriter.writeLine("class JMsgWriter;");
-	headerWriter.writeLine("class JMsgReader;");
-	headerWriter.writeLine("class JMsgProto;");
-	headerWriter.writeLine("enum %sTypeIds {", argv[3]);
-	headerWriter.addIndent();
-	for(size_t i = 0; i < types.size(); i++) {
-		headerWriter.writeLine("k%s = %d,", types[i]->m_typeName.c_str(), types[i]->m_id);
-	};
-	headerWriter.removeIndent();
-	headerWriter.writeLine("};");
-	headerWriter.writeLine("");
-	headerWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen = true);", argv[3]);
-	headerWriter.writeLine("void %sInit();", argv[3]); 
-	headerWriter.writeLine("void %sFini();", argv[3]);
-	headerWriter.writeLine("JMsgProto* %sGetProto();", argv[3]);
-	JMSGCodeWriter cppWriter;
-	cppWriter.open(string(argv[2]) + argv[3] + ".cpp");
-	cppWriter.writeLine("#include \"%s.h\"", argv[3]);
-	cppWriter.writeLine("#include \"jmsg.h\"");
-
-	if(isGenerateJson()) {
-		cppWriter.writeLine("#include \"json/value.h\"");
-	}
-	
-	cppWriter.write("static const unsigned char s_protoString []= {");
-	for(size_t i = 0; i < strlen(content); i++) {
-		if(i % 10 == 0) {
-			cppWriter.write("\n   ");
-		}
-		cppWriter.write("0x%02x,", (unsigned char)content[i]);		
-	}
-	cppWriter.write("0x00");
-	cppWriter.write("\n");
-	cppWriter.writeLine("};");
-	cppWriter.writeLine("");
-	cppWriter.writeLine("JMsgProto* %sCreateProto(bool fixFieldLen) { return JMsgProto::createProto((char*)s_protoString, fixFieldLen); }", argv[3]);
-	cppWriter.writeLine("static JMsgProto* g_proto = NULL;");
-	cppWriter.writeLine("void %sInit(){", argv[3]);
-	cppWriter.addIndent();
-	cppWriter.writeLine("g_proto = %sCreateProto();", argv[3]);
-	cppWriter.removeIndent();
-	cppWriter.writeLine("}");
-	cppWriter.writeLine("void %sFini(){", argv[3]);
-	cppWriter.addIndent();
-	cppWriter.writeLine("if(g_proto) {");
-	cppWriter.addIndent();
-	cppWriter.writeLine("delete g_proto;");
-	cppWriter.writeLine("g_proto = NULL;"); 
-	cppWriter.removeIndent();
-	cppWriter.writeLine("}");
-	cppWriter.removeIndent();
-	cppWriter.writeLine("}");
-	cppWriter.writeLine("");
-	cppWriter.writeLine("JMsgProto* %sGetProto() { return g_proto; }", argv[3]);
-	cppWriter.writeLine("");
-	for(size_t i = 0; i < types.size(); i++) {
-		writeClassDeclare(argv[2], types[i], headerWriter);
-		writeClassImplement(argv[2], types[i], cppWriter);
-	}
-	headerWriter.writeLine("#endif");
-	
-	JMSGCodeWriter declareWriter;
-	declareWriter.open(string(argv[2]) + argv[3] + "Declare.h");
-	declareWriter.writeLine("#ifndef %sDeclare_h",  argv[3]);
-	declareWriter.writeLine("#define %sDeclare_h",  argv[3]);
-	for(size_t i = 0; i < types.size(); i++) {
-		writeTypeDeclare(types[i], declareWriter);
-	}
-	declareWriter.writeLine("#endif");
 
 	generateGoJsonDefine(string(argv[2]) + argv[3] + ".go", types);
 	//delete pcontent;
