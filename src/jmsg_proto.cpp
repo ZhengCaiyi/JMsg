@@ -16,7 +16,6 @@ JMsgProto::~JMsgProto() {
 
 JMsgProto*  JMsgProto::createProto(const string& idlString, bool fixFieldLen) {
 	JMsgProto* proto = new JMsgProto;
-	proto->m_fixFieldLen = fixFieldLen;
 	if(!jMsgIDLParse(idlString, proto->m_vecTypes)) {
 		delete proto;
 		return NULL;
@@ -36,20 +35,12 @@ bool JMsgProto::encode(int typeId, JMsgWriter* writer, JMsgProtoEncodeCallback c
 	}
 	writer->writeFieldHeader(msgType->m_id);
 	for(size_t i = 0; i < msgType->m_vecFields.size(); i++) {
-		if (getFixFieldLen()) {
-			JMsgWriter tempWriter;
-			JMsgField* field = msgType->m_vecFields[i];
-			callback(this, field, &tempWriter, args);
-			writer->writeEncodedLength(tempWriter.getBufferLen());
-			writer->appendBuffer(&tempWriter);
-		}
-		else {
-			JMsgField* field = msgType->m_vecFields[i];
-			callback(this, field, writer, args);
-		}
+		JMsgWriter tempWriter;
+		JMsgField* field = msgType->m_vecFields[i];
+		callback(this, field, &tempWriter, args);
+		writer->writeEncodedLength(tempWriter.getBufferLen());
+		writer->appendBuffer(&tempWriter);
 	}
-
-	// fields end with 0
 	writer->writeFieldHeader(0);
 	return true;
 }
@@ -61,18 +52,11 @@ bool JMsgProto::encode(const std::string& typeName, JMsgWriter* writer, JMsgProt
 	}
 	writer->writeFieldHeader(msgType->m_id);
 	for(size_t i = 0; i < msgType->m_vecFields.size(); i++) {
-
-		if (getFixFieldLen()) {
-			JMsgWriter tempWriter;
-			JMsgField* field = msgType->m_vecFields[i];
-			callback(this, field, &tempWriter, args);
-			writer->writeEncodedLength(tempWriter.getBufferLen());
-			writer->appendBuffer(&tempWriter);
-		}
-		else {
-			JMsgField* field = msgType->m_vecFields[i];
-			callback(this, field, writer, args);
-		}		
+		JMsgWriter tempWriter;
+		JMsgField* field = msgType->m_vecFields[i];
+		callback(this, field, &tempWriter, args);
+		writer->writeEncodedLength(tempWriter.getBufferLen());
+		writer->appendBuffer(&tempWriter);
 	
 	}
 	writer->writeFieldHeader(0);
@@ -94,45 +78,26 @@ int JMsgProto::decode( JMsgReader* reader, JMsgProtoDecodeCallback callback, voi
 	}
 
 	do {
-
-		if (getFixFieldLen()) {
-			int fieldLen = reader->readEncodedLen(isSuccess);
-			if (fieldLen == 0) {
-				break;
-			}
-
-			fieldId = reader->peekMessageTypeId(isSuccess);
-
-			if (!isSuccess) {
-				return -1;
-			}
-
-			JMsgField* field = msgType->getFieldById(fieldId);
-
-			if (!field) {
-				reader->skipLen(fieldLen);
-				continue;
-			}
-			reader->readFieldId(isSuccess);
-			if (!callback(this, field, reader, args)) {
-				return -1;
-			}
+		int fieldLen = reader->readEncodedLen(isSuccess);
+		if (fieldLen == 0) {
+			break;
 		}
-		else {
-			fieldId = reader->readFieldId(isSuccess);
 
-			if (fieldId == 0) {
-				break;
-			}
+		fieldId = reader->peekMessageTypeId(isSuccess);
 
-			JMsgField* field = msgType->getFieldById(fieldId);
+		if (!isSuccess) {
+			return -1;
+		}
 
-			if (!field) {
-				return -1;
-			}
-			if (!callback(this, field, reader, args)) {
-				return -1;
-			}
+		JMsgField* field = msgType->getFieldById(fieldId);
+
+		if (!field) {
+			reader->skipLen(fieldLen);
+			continue;
+		}
+		reader->readFieldId(isSuccess);
+		if (!callback(this, field, reader, args)) {
+			return -1;
 		}
 	} while(true);
 	return typeId;
@@ -186,36 +151,21 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 	do {
 		int fieldLen = 0;
 		JMsgField* field = NULL;
-		if (getFixFieldLen()) {
-			fieldLen = reader->readEncodedLen(isSuccess);
-			if (!fieldLen) {
-				break;
-			}
+		fieldLen = reader->readEncodedLen(isSuccess);
+		if (!fieldLen) {
+			break;
 		}
-
-		if(getFixFieldLen()) {
 			fieldId = reader->peekMessageTypeId(isSuccess);
-		}
-		else {
-			fieldId = reader->readFieldId(isSuccess);
-		}
 		
 
 		field = msgType->getFieldById(fieldId);
 
 
-		if (getFixFieldLen()) {
-			if (!field) {
-				reader->skipLen(fieldLen);
-				continue;
-			}
-			reader->readMessageTypeId(isSuccess);
+		if (!field) {
+			reader->skipLen(fieldLen);
+			continue;
 		}
-		else {
-			if (!field) {
-				break;
-			}
-		}
+		reader->readMessageTypeId(isSuccess);
 
 
 		if(currentFieldCount > 0) {
@@ -223,40 +173,40 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 		}
 		if(!field->m_isArray) {
 			if(field->m_type == "int") {
-				jMsgAppendFormatString(result, "\"%s\": %d", field->m_name.c_str(), reader->readInt(isSuccess));
+				JMsgAppendFormatString(result, "\"%s\": %d", field->m_name.c_str(), reader->readInt(isSuccess));
 			} else if(field->m_type == "double") {
-				jMsgAppendFormatString(result, "\"%s\": %f", field->m_name.c_str(), reader->readDouble(isSuccess));
+				JMsgAppendFormatString(result, "\"%s\": %f", field->m_name.c_str(), reader->readDouble(isSuccess));
 			}  else if(field->m_type == "string") {
 
-				jMsgAppendFormatString(result, "\"%s\": \"%s\"", field->m_name.c_str(), reader->readString(isSuccess).c_str());
+				JMsgAppendFormatString(result, "\"%s\": \"%s\"", field->m_name.c_str(), reader->readString(isSuccess).c_str());
 			} else if(field->m_type == "bool") {
-				jMsgAppendFormatString(result, "\"%s\": %s", field->m_name.c_str(), reader->readBool(isSuccess) ? "true" : "false");
+				JMsgAppendFormatString(result, "\"%s\": %s", field->m_name.c_str(), reader->readBool(isSuccess) ? "true" : "false");
 			} else {
-				jMsgAppendFormatString(result, "\"%s\": ", field->m_name.c_str());
+				JMsgAppendFormatString(result, "\"%s\": ", field->m_name.c_str());
 				toJson(reader, len, result);
 			}
 		} else {
 			int arrayCount = reader->readArrayLength(isSuccess);
-			jMsgAppendFormatString(result, "\"%s\": [", field->m_name.c_str());
+			JMsgAppendFormatString(result, "\"%s\": [", field->m_name.c_str());
 			bool arrayItemWritten = false;
 			for(int i = 0; i < arrayCount; i++) {
 				if(arrayItemWritten) {
-					jMsgAppendFormatString(result, ",");
+					JMsgAppendFormatString(result, ",");
 				}
 				if(field->m_type == "int") {
-					jMsgAppendFormatString(result, "%d", reader->readInt(isSuccess));
+					JMsgAppendFormatString(result, "%d", reader->readInt(isSuccess));
 				} else if(field->m_type == "double") {
-					jMsgAppendFormatString(result, "%f", reader->readDouble(isSuccess));
+					JMsgAppendFormatString(result, "%f", reader->readDouble(isSuccess));
 				}  else if(field->m_type == "string") {
-					jMsgAppendFormatString(result, "\"%s\"", reader->readString(isSuccess).c_str());
+					JMsgAppendFormatString(result, "\"%s\"", reader->readString(isSuccess).c_str());
 				} else if(field->m_type == "bool") {
-					jMsgAppendFormatString(result, " %s", reader->readBool(isSuccess) ? "true" : "false");
+					JMsgAppendFormatString(result, " %s", reader->readBool(isSuccess) ? "true" : "false");
 				} else {
 					toJson(reader, len, result);
 				}
 				arrayItemWritten = true;
 			}
-			jMsgAppendFormatString(result, "]");
+			JMsgAppendFormatString(result, "]");
 		}
 
 		currentFieldCount++;
@@ -264,6 +214,7 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 	result.append("}");
 }
 
+#ifdef JMSG_SUPPORT_JSON
 bool JMsgProto::encodeJson( int typeId, Json::Value& obj, JMsgProtoEncodeJsonCallback callback, void* args )
 {
 	JMsgType* msgType = this->getTypeById(typeId);
@@ -326,3 +277,4 @@ bool JMsgProto::decodeJson( int typeId, Json::Value& obj, JMsgProtoDecodeJsonCal
 	}
 	return true;
 }
+#endif

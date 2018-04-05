@@ -1,14 +1,8 @@
 #include "jmsg.h"
 #include "jmsg_util.h"
 #include "jmsg_code_writer.h"
-extern "C" {
-#include "lua.h"
-#include "lauxlib.h"
-}
 #include <string>
 #include <set>
-#include "xxtea.h"
-#include "Des.h"
 using namespace std;
 enum GenerateType {
 	kGenerateTypeBinary = 0,
@@ -370,37 +364,8 @@ void writeHeaderCollect(const string& baseDir, const string& headerName, JMsgPro
 		writer.writeLine("#include \"%s.h\"", types[i]->m_typeName.c_str());
 	}
 	writer.writeLine("#endif");
-} 
-
-static string getEncodedIDLString(const string& idlString) {
-	const char* key = "weile2017febsdfgt@#$@!";
-	_ServerEngine::CDes des;
-	string ret=  des.EncryptString(idlString, key);
-	string decrypted = des.DecryptString(ret, key);
-	return ret;//des.EncryptString(idlString, key);
 }
 
-static void generateEncryptedIDLFile(const string& oldFileFullName, const string& idlString) {
-	
-	string oldFilePath = JmsgGetFilePath(oldFileFullName);
-	string oldFileNameWithoutExt = JMsgGetFileNameWithoutExt(oldFileFullName);
-	string newFileName = oldFilePath + oldFileNameWithoutExt + "Encoded";
-	string outputLuaString = getEncodedIDLString(idlString);//"local a=[[" + getEncodedIDLString(idlString) + "]]\r\nreturn a";
-	FILE* file = fopen(newFileName.c_str(), "wb");
-	if(!file) {
-		return;
-	}
-
-	fwrite(outputLuaString.c_str(), 1, outputLuaString.size(), file);
-	fclose(file);
-
-	string* fileStr = jMsgGetFileString(newFileName);
-	const char* key = "weile2017febsdfgt@#$@!";
-	_ServerEngine::CDes des;
-	string decrypted = des.DecryptString(*fileStr, key);
-}
-
-// 生成go语言定义
 static void generateGoJsonDefine(const string& outputFileName, std::vector<JMsgType*>& vecTypes) {
 	JMSGCodeWriter goWritter;
 	goWritter.open(outputFileName);
@@ -416,9 +381,9 @@ static void generateGoJsonDefine(const string& outputFileName, std::vector<JMsgT
 			JMsgField msgField = *msgType.m_vecFields[j];
 
 			if(msgField.m_isArray) {
-				goWritter.writeLine("%s []%s `json:\"%s\"`", JMsgGetFirstCharBiggerCase(msgField.m_name).c_str(), msgField.m_type.c_str(), msgField.m_name.c_str());
+				goWritter.writeLine("%s []%s `json:\"%s\"`", JMsgGetFirstCharBigerCase(msgField.m_name).c_str(), msgField.m_type.c_str(), msgField.m_name.c_str());
 			} else {
-				goWritter.writeLine("%s %s `json:\"%s\"`", JMsgGetFirstCharBiggerCase(msgField.m_name).c_str(), msgField.m_type.c_str(), msgField.m_name.c_str());
+				goWritter.writeLine("%s %s `json:\"%s\"`", JMsgGetFirstCharBigerCase(msgField.m_name).c_str(), msgField.m_type.c_str(), msgField.m_name.c_str());
 			}
 		}
 		goWritter.removeIndent();
@@ -524,14 +489,6 @@ int main(int argc, char** argv) {
 		printf("generate type=binary | json | both\n");
 		getchar();
 		return -1;
-	}	
-
-	lua_State* L = luaL_newstate();
-	if(luaL_dofile(L, argv[1]) != 0) {
-		lua_close(L);
-		printf("lua exec error!\n");
-		getchar();
-		return -1;
 	}
 
 	if(argc >= 5) {
@@ -550,12 +507,17 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	const char* content = luaL_checkstring(L, -1);
-	printf("creating proto\n");
+	string content;
+	
+	if(!JMsgGetFileString(argv[1], content)) {
+		printf("read file %s failed\n", argv[1]);
+		getchar();
+		return - 1;
+	}
+	
 	JMsgProto* proto = JMsgProto::createProto(content);
 	
 	if(!proto) {
-		lua_close(L);
 		printf("create proto failed\n");
 		getchar();
 		return -1;
@@ -568,9 +530,5 @@ int main(int argc, char** argv) {
 	generateHeaderFile(outputPath, prefix, types);
 	generateCppFile(outputPath, prefix, types, content);
 	generateDeclareFile(outputPath, prefix, types);
-	
-
 	generateGoJsonDefine(string(argv[2]) + argv[3] + ".go", types);
-	//delete pcontent;
-	lua_close(L);
 }

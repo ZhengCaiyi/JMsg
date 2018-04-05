@@ -9,7 +9,7 @@
 using namespace std;
 static void jMsgOrderTypes(std::map<string, JMsgType*>& mapMessages, std::vector<JMsgType*>& vecMessages);
 static char* skipEmptyChars(char* data) {
-	while(jMsgIsEmptyChar(*data)) {
+	while(JMsgIsEmptyChar(*data)) {
 		data ++;
 	}
 	return data;
@@ -18,7 +18,7 @@ static char* skipEmptyChars(char* data) {
 static char* skipComment(char* data) {
 	while(data && *data == ';') {
 		data ++;
-		while(!jMsgIsChangeLine(*data)) {
+		while(!JMsgIsChangeLine(*data)) {
 			data ++;
 		}
 		
@@ -51,13 +51,13 @@ static char* getcColons(char* data) {
 }
 
 static char* getCommonWord(char* data, string& word) {
-	if(!jMsgIsAlpha(*data) && !jMsgIsUnderLine(*data)) {
+	if(!JMsgIsAlpha(*data) && !JMsgIsUnderLine(*data)) {
 		return NULL;
 	}
 
 	word.append(data, 1);
 	data++;
-	while(jMsgIsAlpha(*data) || jMsgIsDigit(*data) || jMsgIsUnderLine(*data)) {
+	while(JMsgIsAlpha(*data) || JMsgIsDigit(*data) || JMsgIsUnderLine(*data)) {
 		word.append(data, 1);
 		data++;
 	}
@@ -85,7 +85,7 @@ static char* getSquareBrackets(char* data) {
 static char* getNumber(char* data, int* number) {
 	int ret = 0;
 	bool found = false;
-	while(jMsgIsDigit(*data)) {
+	while(JMsgIsDigit(*data)) {
 		ret = ret * 10 + (*data) - '0';
 		found = true;
 		data++;

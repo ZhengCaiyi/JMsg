@@ -11,7 +11,7 @@ JMsgReader::JMsgReader(unsigned char* buf, int len) {
 
 int JMsgReader::peekMessageTypeId(bool& isSuccess) {
 	int sizeLen = 0;
-	int size = jMsgDecodeSize(m_cur, &sizeLen, m_endPtr);
+	int size = JMsgDecodeSize(m_cur, &sizeLen, m_endPtr);
 
 	if(size < 0) {
 		isSuccess = false;
@@ -24,7 +24,7 @@ int JMsgReader::peekMessageTypeId(bool& isSuccess) {
 
 int JMsgReader::readMessageTypeId(bool& isSuccess) {
 	int sizeLen = 0;
-	int size = jMsgDecodeSize(m_cur, &sizeLen, m_endPtr);
+	int size = JMsgDecodeSize(m_cur, &sizeLen, m_endPtr);
 
 	if(size < 0) {
 		isSuccess = false;
@@ -36,7 +36,7 @@ int JMsgReader::readMessageTypeId(bool& isSuccess) {
 
 int JMsgReader::readFieldId(bool& isSuccess) {
 	int sizeLen = 0;
-	int size = jMsgDecodeSize(m_cur, &sizeLen, m_endPtr);
+	int size = JMsgDecodeSize(m_cur, &sizeLen, m_endPtr);
 
 	if(size < 0) {
 		isSuccess = false;
@@ -49,7 +49,7 @@ int JMsgReader::readFieldId(bool& isSuccess) {
 
 int JMsgReader::readArrayLength(bool& isSuccess) {
 	int sizeLen = 0;
-	int size = jMsgDecodeSize(m_cur, &sizeLen, m_endPtr);
+	int size = JMsgDecodeSize(m_cur, &sizeLen, m_endPtr);
 
 	if(size < 0) {
 		isSuccess = false;
@@ -92,7 +92,7 @@ bool JMsgReader::readBool(bool& isSuccess) {
 
 std::string JMsgReader::readString(bool& isSuccess) {
 	int sizeLen = 0;
-	int size = jMsgDecodeSize(m_cur, &sizeLen, m_endPtr);
+	int size = JMsgDecodeSize(m_cur, &sizeLen, m_endPtr);
 
 	if(size < 0) {
 		isSuccess = false;
