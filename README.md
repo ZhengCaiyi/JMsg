@@ -33,7 +33,7 @@ AddressInfo = 2 {
     phoneNo : string = 3
 }
 
-ItemInfo = 2 {
+ItemInfo = 3 {
     itemId : int = 1
     itemCount : int = 2
 }
