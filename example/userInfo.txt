@@ -1,0 +1,15 @@
+Person = 1 {
+    name : string = 1
+    id : int = 2
+    email : string = 3
+    phone : []PhoneNumber = 4
+}
+
+PhoneNumber = 2 {
+    number : string = 1
+    type : int = 2
+}
+
+AddressBook = 3 {
+    person : []Person = 1
+}

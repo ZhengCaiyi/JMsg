@@ -1,0 +1,10 @@
+*.obj
+*.user
+*.pdb
+.embed.manifest
+Release/
+Debug/
+*.ncb
+JMsg.suo
+example/jmsg_example.exe
+example/jmsg_generator.exe

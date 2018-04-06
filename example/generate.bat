@@ -1,0 +1,1 @@
+jmsg_generator.exe userInfo.txt ./ userInfo both
