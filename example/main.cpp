@@ -2,7 +2,6 @@
 #include "userInfo.h"
 #include <json/value.h>
 #include <json/writer.h>
-#include <windows.h>
 using namespace std;
 int main() {
 	userInfoInit();
