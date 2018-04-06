@@ -4,12 +4,12 @@ Overview
 --------------------------------
 JMsg is a message encode/decode library which is simalar to Google Protobuf.
 
-###Features
+####Features
 * Define message format with JMsg proto file
 * Support serialization of both binary and json format(with jsoncpp)
 * Support C++(auto generate encode/decode code) and lua(C binding)
 
-###Compile
+####Compile
 The code struct is very easy. All the library code files are located in the src directory. Code generater refrence the library.
 ###### Code Generator:
 * Linux:just type make in the generator directory
