@@ -14,6 +14,8 @@ public:
 
 	void writeString(const std::string& str);
 	void writeInt(const int value);
+
+    void writeInt64(const int64_t value);
 	void writeDouble(const double value);
 	void writeBool(const bool value);
 	char* getBuffer();

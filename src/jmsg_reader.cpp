@@ -78,6 +78,28 @@ int JMsgReader::readInt(bool& isSuccess) {
 	return ret;
 }
 
+int64_t JMsgReader::readInt64(bool& isSuccess) {
+
+    if (m_endPtr - m_cur < 8) {
+        isSuccess = false;
+        return -1;
+    }
+    int64_t val1 = m_cur[0] ? ((int)m_cur[0]) << 56 : 0;
+    int64_t val2 = m_cur[1] ? ((int)m_cur[1]) << 48 : 0;
+    int64_t val3 = m_cur[2] ? ((int)m_cur[2]) << 40 : 0;
+    int64_t val4 = m_cur[3] ? ((int)m_cur[2]) << 32 : 0;
+    int64_t val5 = m_cur[4] ? ((int)m_cur[0]) << 24 : 0;
+    int64_t val6 = m_cur[5] ? ((int)m_cur[1]) << 16 : 0;
+    int64_t val7 = m_cur[6] ? ((int)m_cur[2]) << 8 : 0;
+    int64_t val8 = m_cur[7];
+
+    int ret = val1 + val2 + val3 + val4 + val5 + val6 + val7 + val8;
+    m_cur += 4;
+    isSuccess = true;
+    return ret;
+}
+
+
 bool JMsgReader::readBool(bool& isSuccess) {
 
 	if(m_endPtr - m_cur < 1) {

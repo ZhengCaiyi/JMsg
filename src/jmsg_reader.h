@@ -9,6 +9,8 @@ public:
 	int readFieldId(bool& isSuccess);
 	int readArrayLength(bool& isSuccess);
 	int readInt(bool& isSuccess);
+
+    int64_t readInt64(bool& isSuccess);
 	bool readBool(bool& isSuccess);
 	std::string readString(bool& isSuccess);
 	double readDouble(bool& isSuccess);

@@ -222,7 +222,7 @@ static char* getType(char* data, JMsgType** ppMsgType) {
 
 static bool isBasicType(const string& fieldName) {
 	if(fieldName == "string" || 
-	   fieldName == "int" || 
+	   fieldName == "int" || fieldName == "int64" ||
 	   fieldName == "double" || 
 	   fieldName == "bool") {
 		return true;

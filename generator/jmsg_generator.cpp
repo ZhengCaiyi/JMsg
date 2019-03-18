@@ -30,10 +30,14 @@ void writeClassDeclare(const string& baseDir, JMsgType* type, JMSGCodeWriter& wr
 	writer.writeLine("%s();", type->m_typeName.c_str());
 	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
 		JMsgField* field = type->m_vecFields[i];
-		if(!field->m_isArray) {
-			writer.writeLine("%s %s;", field->m_type.c_str(), field->m_name.c_str());
+        string typeName = field->m_type;
+        if (field->m_type == "int64") {
+            typeName = "int64_t";
+        }
+		if(!field->m_isArray) {           
+			writer.writeLine("%s %s;", typeName.c_str(), field->m_name.c_str());
 		} else {
-			writer.writeLine("std::vector<%s> %s;", field->m_type.c_str(), field->m_name.c_str());
+			writer.writeLine("std::vector<%s> %s;", typeName.c_str(), field->m_name.c_str());
 		}
 	}
 	
@@ -66,7 +70,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 			continue;
 		}
 
-		if(field->m_type == "double" || field->m_type == "int") {
+		if(field->m_type == "double" || field->m_type == "int" || field->m_type == "int64") {
 			writer.writeLine("%s = 0;", field->m_name.c_str());
 		} else if(field->m_type == "bool") {
 			writer.writeLine("%s = false;", field->m_name.c_str());
@@ -102,7 +106,11 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 						writer.writeLine("value->%s.push_back(reader->readString(isSuccess));", field->m_name.c_str());
 					} else if(field->m_type == "int") {
 						writer.writeLine("value->%s.push_back(reader->readInt(isSuccess));", field->m_name.c_str());
-					} else if(field->m_type == "bool") {
+					}
+                    else if (field->m_type == "int64") {
+                         writer.writeLine("value->%s.push_back(reader->readInt64(isSuccess));", field->m_name.c_str());
+                     }
+                    else if(field->m_type == "bool") {
 						writer.writeLine("value->%s.push_back(reader->readBool(isSuccess));", field->m_name.c_str());
 					} else if(field->m_type == "double"){
 						writer.writeLine("value->%s.push_back(reader->readDouble(isSuccess));", field->m_name.c_str());
@@ -120,7 +128,11 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 					writer.writeLine("value->%s = reader->readBool(isSuccess);", field->m_name.c_str());
 				} else if(field->m_type == "int") {
 					writer.writeLine("value->%s = reader->readInt(isSuccess);", field->m_name.c_str());
-				} else if(field->m_type == "double") {
+				}
+                else if (field->m_type == "int64") {
+                    writer.writeLine("value->%s = reader->readInt64(isSuccess);", field->m_name.c_str());
+                }
+                else if(field->m_type == "double") {
 					writer.writeLine("value->%s = reader->readDouble(isSuccess);", field->m_name.c_str());
 				}else if(field->m_typeId != 0) {
 					writer.writeLine("isSuccess = value->%s.decode(reader);", field->m_name.c_str());
@@ -166,7 +178,11 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 						writer.writeLine("writer->writeString(value->%s[i]);", field->m_name.c_str());
 					} else if(field->m_type == "int") {
 						writer.writeLine("writer->writeInt(value->%s[i]);", field->m_name.c_str());
-					} else if(field->m_type == "bool") {
+					}
+                    else if (field->m_type == "int64") {
+                         writer.writeLine("writer->writeInt64(value->%s[i]);", field->m_name.c_str());
+                     }
+                    else if(field->m_type == "bool") {
 						writer.writeLine("writer->writeBool(value->%s[i]);", field->m_name.c_str());
 					} else if(field->m_type == "double"){
 						writer.writeLine("writer->writeDouble(value->%s[i]);", field->m_name.c_str());
@@ -181,7 +197,11 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 					writer.writeLine("writer->writeBoolField(field, value->%s);", field->m_name.c_str());
 				} else if(field->m_type == "int") {
 					writer.writeLine("writer->writeIntField(field, value->%s);", field->m_name.c_str());
-				} else if(field->m_type == "double") {
+				}
+                else if (field->m_type == "int64") {
+                    writer.writeLine("writer->writeInt64Field(field, value->%s);", field->m_name.c_str());
+                }
+                else if(field->m_type == "double") {
 					writer.writeLine("writer->writeDoubleField(field, value->%s);", field->m_name.c_str());
 				} else if(field->m_typeId != 0) {
 					writer.writeLine("writer->writeFieldHeader(field);", field->m_name.c_str());
@@ -239,7 +259,11 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 						writer.writeLine("value->%s.push_back(jsonValue[(int)i].isString() ? jsonValue[(int)i].asString() : \"\");", field->m_name.c_str());
 					} else if(field->m_type == "int") {
 						writer.writeLine("value->%s.push_back(jsonValue[(int)i].isInt() ? jsonValue[(int)i].asInt() : 0);", field->m_name.c_str());
-					} else if(field->m_type == "bool") {
+					}
+                    else if (field->m_type == "int64") {
+                        writer.writeLine("value->%s.push_back(jsonValue[(int)i].isInt64() ? jsonValue[(int)i].asInt64() : 0);", field->m_name.c_str());
+                    }
+                    else if(field->m_type == "bool") {
 						writer.writeLine("value->%s.push_back(jsonValue[(int)i].isBool() ? jsonValue[(int)i].asBool() : false);", field->m_name.c_str());
 					} else if(field->m_type == "double"){
 						writer.writeLine("value->%s.push_back(jsonValue[(int)i].isDouble() ? jsonValue[(int)i].asDouble(): 0);", field->m_name.c_str());
@@ -257,7 +281,11 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 					writer.writeLine("value->%s = jsonValue.isBool() ? jsonValue.asBool() : false;", field->m_name.c_str());
 				} else if(field->m_type == "int") {
 					writer.writeLine("value->%s = jsonValue.isInt() ? jsonValue.asInt() : 0;", field->m_name.c_str());
-				} else if(field->m_type == "double") {
+				}
+                else if (field->m_type == "int64") {
+                    writer.writeLine("value->%s = jsonValue.isInt64() ? jsonValue.asInt64() : 0;", field->m_name.c_str());
+                }
+                else if(field->m_type == "double") {
 					writer.writeLine("value->%s = jsonValue.isDouble() ? jsonValue.asDouble() : 0;", field->m_name.c_str());
 				}else if(field->m_typeId != 0) {
 					writer.writeLine("isSuccess = value->%s.decodeJson(jsonValue);", field->m_name.c_str());
@@ -299,7 +327,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 					writer.writeLine("arrayValue.resize(0);");
 					writer.writeLine("for(size_t i = 0; i < value->%s.size(); i++) {", field->m_name.c_str());
 					writer.addIndent();
-					if(field->m_type == "string" || field->m_type == "int" || field->m_type == "bool" || field->m_type == "double") {
+					if(field->m_type == "string" || field->m_type == "int" || field->m_type == "int64" || field->m_type == "bool" || field->m_type == "double") {
 						writer.writeLine("arrayValue.append(value->%s[i]);", field->m_name.c_str());
 					} else if(field->m_typeId != 0) {
 						writer.writeLine("Json::Value itemValue;");
