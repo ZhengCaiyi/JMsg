@@ -337,7 +337,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 					writer.removeIndent();
 					writer.writeLine("}");
 					writer.writeLine("jsonValue[\"%s\"] = arrayValue;", field->m_name.c_str());
-				}  else if(field->m_type == "string" || field->m_type == "int" || field->m_type == "bool" || field->m_type == "double") {
+				}  else if(field->m_type == "string" || field->m_type == "int" || field->m_type == "int64" || field->m_type == "bool" || field->m_type == "double") {
 					writer.writeLine("jsonValue[\"%s\"] = value->%s;", field->m_name.c_str(), field->m_name.c_str());
 				} else if(field->m_typeId != 0) {
 					writer.writeLine("Json::Value itemValue;");

@@ -7,8 +7,39 @@
 #include "jmsg_util.h"
 
 using namespace std;
+static char* s_startPos = nullptr;
 static void jMsgOrderTypes(std::map<string, JMsgType*>& mapMessages, std::vector<JMsgType*>& vecMessages);
+
+static string getErrorPos(const char* ptr) {
+	int rowCount = 0;
+	int colCount = 0;
+	char* curPos = s_startPos;
+	bool found = false;
+	for (;;) {
+		if (curPos == nullptr) {
+			break;
+		}
+
+		if (curPos == ptr) {
+			found = true;
+			break;
+		}
+
+		if (*curPos == '\n') {
+			rowCount++;
+			colCount = 0;
+		}
+		else {
+			colCount++;
+		}
+		curPos++;
+	}
+
+	return JMsgGetFormatString("row %d, col %d", rowCount, colCount);
+
+}
 static char* skipEmptyChars(char* data) {
+	char* temp = data;
 	while(JMsgIsEmptyChar(*data)) {
 		data ++;
 	}
@@ -16,6 +47,7 @@ static char* skipEmptyChars(char* data) {
 }
 
 static char* skipComment(char* data) {
+	char* temp = data;
 	while(data && *data == ';') {
 		data ++;
 		while(!JMsgIsChangeLine(*data)) {
@@ -37,6 +69,7 @@ static char* getLeftBrace(char* data) {
 		data++;
 		return data;
 	} else {
+		printf("%s:getLeftBrace failed", getErrorPos(data).c_str());
 		return NULL;
 	}
 }
@@ -46,12 +79,15 @@ static char* getcColons(char* data) {
 		data++;
 		return data;
 	} else {
+
+		printf("%s:getcColons failed\n", getErrorPos(data).c_str());
 		return NULL;
 	}
 }
 
 static char* getCommonWord(char* data, string& word) {
 	if(!JMsgIsAlpha(*data) && !JMsgIsUnderLine(*data)) {
+		printf("%s:getCommonWord failed\n", getErrorPos(data).c_str());
 		return NULL;
 	}
 
@@ -69,6 +105,8 @@ static char* getEqual(char* data) {
 		data++;
 		return data;
 	} else {
+
+		printf("%s:getEqual failed", getErrorPos(data).c_str());
 		return NULL;
 	}
 }
@@ -95,6 +133,8 @@ static char* getNumber(char* data, int* number) {
 		*number = ret;
 		return data;
 	} else {
+
+		printf("%s:getNumber failed", getErrorPos(data).c_str());
 		return NULL;
 	}
 
@@ -239,6 +279,7 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 		if(mapTypeNames.find(typeName) == mapTypeNames.end()) {
 			mapTypeNames[typeName] = vecMessages[i];
 		} else {
+			printf("duplicate typeName:%s\n", typeName.c_str());
 			return false;
 		}
 
@@ -246,6 +287,8 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 		if(setTypeIds.find(vecMessages[i]->m_id) == setTypeIds.end()) {
 			setTypeIds.insert(vecMessages[i]->m_id);
 		} else {
+
+			printf("%s duplicate fieldId:%d\n", typeName.c_str(), vecMessages[i]->m_id);
 			return false;
 		}
 	}
@@ -314,7 +357,7 @@ static void jMsgOrderTypes(std::map<string, JMsgType*>& mapMessages, std::vector
 
 bool jMsgIDLParse(const string& strData, std::vector<JMsgType*>& vecMessages) {
 	char* data = (char*)strData.c_str();
-
+	s_startPos = data;
 	do {
 		JMsgType* msgType = NULL;
 		data = skipEmptyChars(data);
