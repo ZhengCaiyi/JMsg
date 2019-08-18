@@ -16,11 +16,8 @@ int main() {
 	phoneNo1.type = 1;
 	PhoneNumber phoneNo2;
 	phoneNo2.number = "87654321";
-	phoneNo2.type = 2;
-    person1.phone = { phoneNo1, phoneNo2 };
-    person1.address.push_back("xiamen");
-    person1.address.push_back("tongan");
-	ab2.person.push_back(person1);
+    person1.address = { "xiamen", "tonaan" };
+	
 
 	Person person2;
 	person2.name = "Bob";
@@ -28,8 +25,8 @@ int main() {
 	PhoneNumber phoneNo3;
 	phoneNo3.number = "01234567890";
 	phoneNo3.type = 3;
-	person2.phone.push_back(phoneNo3);
-	ab2.person.push_back(person2);
+    person2.phone = { phoneNo3 };
+    ab2.person = { person1, person2 };
 	
     rapidjson::Document doc;
     rapidjson::Value jsonValue(rapidjson::kObjectType);
@@ -44,5 +41,7 @@ int main() {
 
     AddressBook ab3;
     JMsgFromJson(data, ab3);
+
+    auto jsonText = JMsgToJson(ab3);
     userInfoFini();
 }

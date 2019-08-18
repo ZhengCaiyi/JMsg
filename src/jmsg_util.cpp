@@ -144,11 +144,14 @@ void JMsgAppendFormatString(std::string& data, const char* format, ...) {
 
 std::string JMsgToJson(IJMsgEncodeable & msg)
 {
-    rapidjson::Value val(rapidjson::kObjectType);
+    rapidjson::Document doc;
+    doc.SetObject();
+    msg.encodeJson(doc, doc);
+
     rapidjson::StringBuffer buffer;
     buffer.Clear();
     rapidjson::Writer<rapidjson::StringBuffer> bufferwriter(buffer);
-    val.Accept(bufferwriter);
+    doc.Accept(bufferwriter);
     return buffer.GetString();
 }
 

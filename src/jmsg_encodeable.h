@@ -8,8 +8,8 @@ class JMsgReader;
 
 class IJMsgEncodeable {
 public:
-	virtual void encodeJson(rapidjson::Document&, rapidjson::Value& val) {}
-	virtual bool decodeJson(rapidjson::Value& val) {return true;}
+    virtual void encodeJson(rapidjson::Document&, rapidjson::Value& val) = 0;
+    virtual bool decodeJson(rapidjson::Value& val) = 0;
 	int getMsgId() { return m_msgId; } 
 protected:
 	int m_msgId;

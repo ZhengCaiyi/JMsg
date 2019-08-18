@@ -53,11 +53,11 @@ static bool onPhoneNumberDecodeJson(JMsgProto* proto, JMsgField* field, rapidjso
    PhoneNumber* value = (PhoneNumber*)args;
    switch(field->m_id) {
    case 1: {
-      value->number = jsonValue.IsString() ? jsonValue.GetString() : "";
+      if(jsonValue.IsString()) value->number = jsonValue.GetString();
       break;
    }
    case 2: {
-      value->type = jsonValue.IsInt() ? jsonValue.GetInt() : 0;
+      if(jsonValue.IsInt()) value->type = jsonValue.GetInt();
       break;
    }
    default:
@@ -71,13 +71,15 @@ static bool onPhoneNumberEncodeJson(JMsgProto* proto, JMsgField* field, rapidjso
    PhoneNumber* value = (PhoneNumber*)args;
    switch(field->m_id) {
    case 1: {
+      if(!value->number.has_value()) break;
       rapidjson::Value valStr;
-      valStr.SetString(value->number.c_str(), value->number.size(), allocator);
+      valStr.SetString(value->number.value().c_str(), value->number.value().size(), allocator);
       jsonValue.AddMember("number", valStr.Move(), allocator);
       break;
    }
    case 2: {
-      jsonValue.AddMember("type", value->type, allocator);
+      if(!value->type.has_value()) break;
+      jsonValue.AddMember("type", value->type.value(), allocator);
       break;
    }
    default:
@@ -104,29 +106,33 @@ static bool onPersonDecodeJson(JMsgProto* proto, JMsgField* field, rapidjson::Va
    Person* value = (Person*)args;
    switch(field->m_id) {
    case 1: {
-      value->name = jsonValue.IsString() ? jsonValue.GetString() : "";
+      if(jsonValue.IsString()) value->name = jsonValue.GetString();
       break;
    }
    case 2: {
-      value->id = jsonValue.IsInt() ? jsonValue.GetInt() : 0;
+      if(jsonValue.IsInt()) value->id = jsonValue.GetInt();
       break;
    }
    case 3: {
-      value->email = jsonValue.IsString() ? jsonValue.GetString() : "";
+      if(jsonValue.IsString()) value->email = jsonValue.GetString();
       break;
    }
    case 4: {
+      std::vector<PhoneNumber> arrayValue;
       for(size_t i = 0; i < jsonValue.Size(); i++) {
          PhoneNumber item;
          isSuccess = item.decodeJson(jsonValue[(int)i]);
          if(!isSuccess) break;
-         value->phone.push_back(item);
+         arrayValue.push_back(item);
+         value->phone = arrayValue;
       }
       break;
    }
    case 5: {
+      std::vector<string> arrayValue;
       for(size_t i = 0; i < jsonValue.Size(); i++) {
-         value->address.push_back(jsonValue[(int)i].IsString() ? jsonValue[(int)i].GetString() : "");
+         arrayValue.push_back(jsonValue[(int)i].IsString() ? jsonValue[(int)i].GetString() : "");
+         value->address = arrayValue;
       }
       break;
    }
@@ -141,36 +147,41 @@ static bool onPersonEncodeJson(JMsgProto* proto, JMsgField* field, rapidjson::Do
    Person* value = (Person*)args;
    switch(field->m_id) {
    case 1: {
+      if(!value->name.has_value()) break;
       rapidjson::Value valStr;
-      valStr.SetString(value->name.c_str(), value->name.size(), allocator);
+      valStr.SetString(value->name.value().c_str(), value->name.value().size(), allocator);
       jsonValue.AddMember("name", valStr.Move(), allocator);
       break;
    }
    case 2: {
-      jsonValue.AddMember("id", value->id, allocator);
+      if(!value->id.has_value()) break;
+      jsonValue.AddMember("id", value->id.value(), allocator);
       break;
    }
    case 3: {
+      if(!value->email.has_value()) break;
       rapidjson::Value valStr;
-      valStr.SetString(value->email.c_str(), value->email.size(), allocator);
+      valStr.SetString(value->email.value().c_str(), value->email.value().size(), allocator);
       jsonValue.AddMember("email", valStr.Move(), allocator);
       break;
    }
    case 4: {
+      if(!value->phone.has_value()) break;
       rapidjson::Value arrayValue(rapidjson::kArrayType);
-      for(size_t i = 0; i < value->phone.size(); i++) {
+      for(size_t i = 0; i < value->phone.value().size(); i++) {
          rapidjson::Value itemValue(rapidjson::kObjectType);
-         value->phone[i].encodeJson(doc, itemValue);
+         value->phone.value()[i].encodeJson(doc, itemValue);
          arrayValue.PushBack(itemValue.Move(), allocator);
       }
       jsonValue.AddMember("phone", arrayValue, allocator);
       break;
    }
    case 5: {
+      if(!value->address.has_value()) break;
       rapidjson::Value arrayValue(rapidjson::kArrayType);
-      for(size_t i = 0; i < value->address.size(); i++) {
+      for(size_t i = 0; i < value->address.value().size(); i++) {
          rapidjson::Value valStr;
-         valStr.SetString(value->address[i].c_str(), value->address[i].size(), allocator);
+         valStr.SetString(value->address.value()[i].c_str(), value->address.value()[i].size(), allocator);
          arrayValue.PushBack(valStr.Move(), allocator);
       }
       jsonValue.AddMember("address", arrayValue, allocator);
@@ -199,11 +210,13 @@ static bool onAddressBookDecodeJson(JMsgProto* proto, JMsgField* field, rapidjso
    AddressBook* value = (AddressBook*)args;
    switch(field->m_id) {
    case 1: {
+      std::vector<Person> arrayValue;
       for(size_t i = 0; i < jsonValue.Size(); i++) {
          Person item;
          isSuccess = item.decodeJson(jsonValue[(int)i]);
          if(!isSuccess) break;
-         value->person.push_back(item);
+         arrayValue.push_back(item);
+         value->person = arrayValue;
       }
       break;
    }
@@ -218,10 +231,11 @@ static bool onAddressBookEncodeJson(JMsgProto* proto, JMsgField* field, rapidjso
    AddressBook* value = (AddressBook*)args;
    switch(field->m_id) {
    case 1: {
+      if(!value->person.has_value()) break;
       rapidjson::Value arrayValue(rapidjson::kArrayType);
-      for(size_t i = 0; i < value->person.size(); i++) {
+      for(size_t i = 0; i < value->person.value().size(); i++) {
          rapidjson::Value itemValue(rapidjson::kObjectType);
-         value->person[i].encodeJson(doc, itemValue);
+         value->person.value()[i].encodeJson(doc, itemValue);
          arrayValue.PushBack(itemValue.Move(), allocator);
       }
       jsonValue.AddMember("person", arrayValue, allocator);

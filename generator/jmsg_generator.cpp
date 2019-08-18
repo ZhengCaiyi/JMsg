@@ -31,9 +31,9 @@ void writeClassDeclare(const string& baseDir, JMsgType* type, JMSGCodeWriter& wr
             typeName = "int64_t";
         }
 		if(!field->m_isArray) {           
-			writer.writeLine("%s %s;", typeName.c_str(), field->m_name.c_str());
+			writer.writeLine("absl::optional<%s> %s;", typeName.c_str(), field->m_name.c_str());
 		} else {
-			writer.writeLine("std::vector<%s> %s;", typeName.c_str(), field->m_name.c_str());
+			writer.writeLine("absl::optional<std::vector<%s>> %s;", typeName.c_str(), field->m_name.c_str());
 		}
 	}	
 
@@ -84,42 +84,50 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 				writer.addIndent();
 
 				if(field->m_isArray) {
+
+                    writer.writeLine("std::vector<%s> arrayValue;", field->m_type.c_str());
 					writer.writeLine("for(size_t i = 0; i < jsonValue.Size(); i++) {");
 					writer.addIndent();
 					if(field->m_type == "string") {
-						writer.writeLine("value->%s.push_back(jsonValue[(int)i].IsString() ? jsonValue[(int)i].GetString() : \"\");", field->m_name.c_str());
+						writer.writeLine("arrayValue.push_back(jsonValue[(int)i].IsString() ? jsonValue[(int)i].GetString() : \"\");");
 					} else if(field->m_type == "int") {
-						writer.writeLine("value->%s.push_back(jsonValue[(int)i].IsInt() ? jsonValue[(int)i].GetInt() : 0);", field->m_name.c_str());
+						writer.writeLine("arrayValue.push_back(jsonValue[(int)i].IsInt() ? jsonValue[(int)i].GetInt() : 0);");
 					}
                     else if (field->m_type == "int64") {
-                        writer.writeLine("value->%s.push_back(jsonValue[(int)i].IsInt64() ? jsonValue[(int)i].GetInt64() : 0);", field->m_name.c_str());
+                        writer.writeLine("arrayValue.push_back(jsonValue[(int)i].IsInt64() ? jsonValue[(int)i].GetInt64() : 0);");
                     }
                     else if(field->m_type == "bool") {
-						writer.writeLine("value->%s.push_back(jsonValue[(int)i].IsBool() ? jsonValue[(int)i].GetBool() : false);", field->m_name.c_str());
+						writer.writeLine("arrayValue.push_back(jsonValue[(int)i].IsBool() ? jsonValue[(int)i].GetBool() : false);");
 					} else if(field->m_type == "double"){
-						writer.writeLine("value->%s.push_back(jsonValue[(int)i].IsDouble() ? jsonValue[(int)i].GetDouble(): 0);", field->m_name.c_str());
+						writer.writeLine("arrayValue.push_back(jsonValue[(int)i].IsDouble() ? jsonValue[(int)i].GetDouble(): 0);");
 					} else if(field->m_typeId != 0) {
 						writer.writeLine("%s item;", field->m_type.c_str());
 						writer.writeLine("isSuccess = item.decodeJson(jsonValue[(int)i]);");
 						writer.writeLine("if(!isSuccess) break;");
-						writer.writeLine("value->%s.push_back(item);", field->m_name.c_str());
+						writer.writeLine("arrayValue.push_back(item);");
 					} 
+                    writer.writeLine("value->%s = arrayValue;", field->m_name.c_str());
 					writer.removeIndent();
 					writer.writeLine("}");
 				} else if(field->m_type == "string") {
-					writer.writeLine("value->%s = jsonValue.IsString() ? jsonValue.GetString() : \"\";", field->m_name.c_str());
+					writer.writeLine("if(jsonValue.IsString()) value->%s = jsonValue.GetString();", field->m_name.c_str());
 				} else if(field->m_type == "bool") {
-					writer.writeLine("value->%s = jsonValue.IsBool() ? jsonValue.GetBool() : false;", field->m_name.c_str());
+					writer.writeLine("if(jsonValue.IsBool()) value->%s = jsonValue.GetBool();", field->m_name.c_str());
 				} else if(field->m_type == "int") {
-					writer.writeLine("value->%s = jsonValue.IsInt() ? jsonValue.GetInt() : 0;", field->m_name.c_str());
+					writer.writeLine("if(jsonValue.IsInt()) value->%s = jsonValue.GetInt();", field->m_name.c_str());
 				}
                 else if (field->m_type == "int64") {
-                    writer.writeLine("value->%s = jsonValue.IsInt64() ? jsonValue.GetInt64() : 0;", field->m_name.c_str());
+                    writer.writeLine("if(jsonValue.IsInt64()) value->%s = jsonValue.GetInt64();", field->m_name.c_str());
                 }
                 else if(field->m_type == "double") {
-					writer.writeLine("value->%s = jsonValue.IsDouble() ? jsonValue.GetDouble() : 0;", field->m_name.c_str());
+					writer.writeLine("if(jsonValue.IsDouble()) value->%s = jsonValue.GetDouble();", field->m_name.c_str());
 				}else if(field->m_typeId != 0) {
-					writer.writeLine("isSuccess = value->%s.decodeJson(jsonValue);", field->m_name.c_str());
+                    writer.writeLine("%s decodedValue", field->m_type.c_str());
+					writer.writeLine("if(decodedValue.decodeJson(jsonValue)) {", field->m_name.c_str());
+                    writer.addIndent();
+                    writer.writeLine("value->%s = decodedValue;", field->m_name.c_str());
+                    writer.removeIndent();
+                    writer.writeLine("}");
 				}
 				writer.writeLine("break;");
 				writer.removeIndent();
@@ -155,31 +163,35 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 				writer.writeLine("case %d: {", field->m_id);
 				writer.addIndent();
 				if(field->m_isArray) {
+                    writer.writeLine("if(!value->%s.has_value()) break;", field->m_name.c_str());
 					writer.writeLine("rapidjson::Value arrayValue(rapidjson::kArrayType);");
-					writer.writeLine("for(size_t i = 0; i < value->%s.size(); i++) {", field->m_name.c_str());
+					writer.writeLine("for(size_t i = 0; i < value->%s.value().size(); i++) {", field->m_name.c_str());
 					writer.addIndent();
 					if(field->m_type == "int" || field->m_type == "int64" || field->m_type == "bool" || field->m_type == "double") {
-						writer.writeLine("arrayValue.PushBack(rapidjson::Value(value->%s[i]).move(), allocator);", field->m_name.c_str());
+						writer.writeLine("arrayValue.PushBack(rapidjson::Value(value->%s.value()[i]).move(), allocator);", field->m_name.c_str());
 					} else if (field->m_type == "string") {
                         writer.writeLine("rapidjson::Value valStr;");
-                        writer.writeLine("valStr.SetString(value->%s[i].c_str(), value->%s[i].size(), allocator);", field->m_name.c_str(), field->m_name.c_str());
+                        writer.writeLine("valStr.SetString(value->%s.value()[i].c_str(), value->%s.value()[i].size(), allocator);", field->m_name.c_str(), field->m_name.c_str());
                         writer.writeLine("arrayValue.PushBack(valStr.Move(), allocator);");
                     } else if(field->m_typeId != 0) {
 						writer.writeLine("rapidjson::Value itemValue(rapidjson::kObjectType);");
-						writer.writeLine("value->%s[i].encodeJson(doc, itemValue);", field->m_name.c_str());
+						writer.writeLine("value->%s.value()[i].encodeJson(doc, itemValue);", field->m_name.c_str());
 						writer.writeLine("arrayValue.PushBack(itemValue.Move(), allocator);");
 					}				
 					writer.removeIndent();
 					writer.writeLine("}");
 					writer.writeLine("jsonValue.AddMember(\"%s\", arrayValue, allocator);", field->m_name.c_str());
 				} else if (field->m_type == "string") {
+                    writer.writeLine("if(!value->%s.has_value()) break;", field->m_name.c_str());
                     writer.writeLine("rapidjson::Value valStr;");
-                    writer.writeLine("valStr.SetString(value->%s.c_str(), value->%s.size(), allocator);", field->m_name.c_str(), field->m_name.c_str());
+                    writer.writeLine("valStr.SetString(value->%s.value().c_str(), value->%s.value().size(), allocator);", field->m_name.c_str(), field->m_name.c_str());
                     writer.writeLine("jsonValue.AddMember(\"%s\", valStr.Move(), allocator);", field->m_name.c_str());
                 }
-                else if(field->m_type == "string" || field->m_type == "int" || field->m_type == "int64" || field->m_type == "bool" || field->m_type == "double") {
-					writer.writeLine("jsonValue.AddMember(\"%s\", value->%s, allocator);", field->m_name.c_str(), field->m_name.c_str());
+                else if(field->m_type == "int" || field->m_type == "int64" || field->m_type == "bool" || field->m_type == "double") {
+                    writer.writeLine("if(!value->%s.has_value()) break;", field->m_name.c_str());
+					writer.writeLine("jsonValue.AddMember(\"%s\", value->%s.value(), allocator);", field->m_name.c_str(), field->m_name.c_str(), field->m_name.c_str());
 				} else if(field->m_typeId != 0) {
+                    writer.writeLine("if(!value->%s.has_value()) break;", field->m_name.c_str());
 					writer.writeLine("rapidjson::Value itemValue(rapidjson::kkObject);");
 					writer.writeLine("value->%s.encodeJson(doc, itemValue);", field->m_name.c_str());
 					writer.writeLine("jsonValue.AddMember(\"%s\", itemValue.Move(), allocator);", field->m_name.c_str());
@@ -268,6 +280,7 @@ void generateHeaderFile(const std::string& outputPath, const string& prefix, std
 	headerWriter.writeLine("#include <stdio.h>");
 	headerWriter.writeLine("#include <vector>");
 	headerWriter.writeLine("#include <string>");
+    headerWriter.writeLine("#include <absl/types/optional.h>");
 	headerWriter.writeLine("#include \"jmsg_encodeable.h\"");
     headerWriter.writeLine("#include \"rapidjson/rapidjson.h\"");
     headerWriter.writeLine("#include \"rapidjson/document.h\"");
