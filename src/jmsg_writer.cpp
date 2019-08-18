@@ -58,10 +58,10 @@ void JMsgWriter::writeInt64(const int64_t value) {
     buf[1] = (value >> 48) & 0xff;
     buf[2] = (value >> 40) & 0xff;
     buf[3] = (value >> 32) & 0xff;
-    buf[5] = (value >> 24) & 0xff;
-    buf[6] = (value >> 16) & 0xff;
-    buf[7] = (value >> 8) & 0xff;
-    buf[8] = value & 0xff;
+    buf[4] = (value >> 24) & 0xff;
+    buf[5] = (value >> 16) & 0xff;
+    buf[6] = (value >> 8) & 0xff;
+    buf[7] = value & 0xff;
     m_buffer.append((char*)buf, 8);
 }
 void JMsgWriter::writeDouble(const double value) {
