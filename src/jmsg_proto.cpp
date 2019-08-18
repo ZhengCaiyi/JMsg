@@ -28,81 +28,6 @@ JMsgProto*  JMsgProto::createProto(const string& idlString) {
 	return proto;
 }
 
-bool JMsgProto::encode(int typeId, JMsgWriter* writer, JMsgProtoEncodeCallback callback, void* args) {
-	JMsgType* msgType = getTypeById(typeId);
-	if(!msgType) {
-		return false;
-	}
-	writer->writeFieldHeader(msgType->m_id);
-	for(size_t i = 0; i < msgType->m_vecFields.size(); i++) {
-		JMsgWriter tempWriter;
-		JMsgField* field = msgType->m_vecFields[i];
-		callback(this, field, &tempWriter, args);
-		writer->writeEncodedLength(tempWriter.getBufferLen());
-		writer->appendBuffer(&tempWriter);
-	}
-	writer->writeFieldHeader(0);
-	return true;
-}
-
-bool JMsgProto::encode(const std::string& typeName, JMsgWriter* writer, JMsgProtoEncodeCallback callback, void* args) {
-	JMsgType* msgType = getTypeByName(typeName);
-	if(!msgType) {
-		return false;
-	}
-	writer->writeFieldHeader(msgType->m_id);
-	for(size_t i = 0; i < msgType->m_vecFields.size(); i++) {
-		JMsgWriter tempWriter;
-		JMsgField* field = msgType->m_vecFields[i];
-		callback(this, field, &tempWriter, args);
-		writer->writeEncodedLength(tempWriter.getBufferLen());
-		writer->appendBuffer(&tempWriter);
-	
-	}
-	writer->writeFieldHeader(0);
-	return true;
-}
-
-int JMsgProto::decode( JMsgReader* reader, JMsgProtoDecodeCallback callback, void* args) {
-	bool isSuccess = false;
-	int typeId = reader->readFieldId(isSuccess);
-
-	if(!isSuccess) {
-		return -1;
-	}
-
-	JMsgType* msgType = getTypeById(typeId);
-	int fieldId = 0;
-	if(!msgType) {
-		return -1;
-	}
-
-	do {
-		int fieldLen = reader->readEncodedLen(isSuccess);
-		if (fieldLen == 0) {
-			break;
-		}
-
-		fieldId = reader->peekMessageTypeId(isSuccess);
-
-		if (!isSuccess) {
-			return -1;
-		}
-
-		JMsgField* field = msgType->getFieldById(fieldId);
-
-		if (!field) {
-			reader->skipLen(fieldLen);
-			continue;
-		}
-		reader->readFieldId(isSuccess);
-		if (!callback(this, field, reader, args)) {
-			return -1;
-		}
-	} while(true);
-	return typeId;
-}
-
 JMsgType* JMsgProto::getTypeByName(const std::string& name) {
 	map<string, size_t>::iterator iter = m_mapNameToIndex.find(name);
 	if(iter == m_mapNameToIndex.end()) {
@@ -215,7 +140,7 @@ void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
 }
 
 #ifdef JMSG_SUPPORT_JSON
-bool JMsgProto::encodeJson( int typeId, Json::Value& obj, JMsgProtoEncodeJsonCallback callback, void* args )
+bool JMsgProto::encodeJson( int typeId, rapidjson::Document& doc, rapidjson::Value& obj, JMsgProtoEncodeJsonCallback callback, void* args )
 {
 	JMsgType* msgType = this->getTypeById(typeId);
 
@@ -228,22 +153,29 @@ bool JMsgProto::encodeJson( int typeId, Json::Value& obj, JMsgProtoEncodeJsonCal
 	for(size_t i = 0; i < fields.size(); i++) {
 		JMsgField* field = fields[i];
 
-		callback(this, field, obj, args);
+		callback(this, field, doc, obj, args);
 	}
 	return true;
 }
 
-bool JMsgProto::decodeJson( const string& typeName, Json::Value& obj, JMsgProtoDecodeJsonCallback callback, void* args )
-{
-	Json::Value val;
-	
-	
+bool JMsgProto::decodeJson( const string& typeName,  rapidjson::Value& obj, JMsgProtoDecodeJsonCallback callback, void* args )
+{	
 	JMsgType* msgType = this->getTypeByName(typeName);
 
 	if(!msgType) {
 		return false;
 	}
+    
+    for (auto memIter = obj.MemberBegin(); memIter != obj.MemberEnd(); memIter++) {
+        auto key = memIter->name.GetString();
+        JMsgField* field = msgType->getFieldByName(key);
+        if (!field) {
+            continue;
+        }
+        callback(this, field, memIter->value, args);
+    }
 
+    /*
 	Json::Value::Members mem = obj.getMemberNames(); 
 	for(size_t i = 0;i < mem.size(); i++) {
 		string& key = mem[i];
@@ -254,10 +186,11 @@ bool JMsgProto::decodeJson( const string& typeName, Json::Value& obj, JMsgProtoD
 		}		
 		callback(this, field, obj, args);
 	}
-	return true;
+    */
+    return true;
 }
 
-bool JMsgProto::decodeJson( int typeId, Json::Value& obj, JMsgProtoDecodeJsonCallback callback, void* args )
+bool JMsgProto::decodeJson( int typeId, rapidjson::Value& obj, JMsgProtoDecodeJsonCallback callback, void* args )
 {	
 	JMsgType* msgType = this->getTypeById(typeId);
 
@@ -265,6 +198,7 @@ bool JMsgProto::decodeJson( int typeId, Json::Value& obj, JMsgProtoDecodeJsonCal
 		return false;
 	}
 
+    /*
 	Json::Value::Members mem = obj.getMemberNames(); 
 	for(size_t i = 0;i < mem.size(); i++) {
 		string& key = mem[i];
@@ -274,7 +208,15 @@ bool JMsgProto::decodeJson( int typeId, Json::Value& obj, JMsgProtoDecodeJsonCal
 			continue;
 		}		
 		callback(this, field, obj[key], args);
-	}
+	}*/
+    for (auto memIter = obj.MemberBegin(); memIter != obj.MemberEnd(); memIter++) {
+        auto key = memIter->name.GetString();
+        JMsgField* field = msgType->getFieldByName(key);
+        if (!field) {
+            continue;
+        }
+        callback(this, field, memIter->value, args);
+    }
 	return true;
 }
 #endif

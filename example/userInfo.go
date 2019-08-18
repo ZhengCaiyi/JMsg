@@ -9,6 +9,7 @@ type Person struct {
    Id int `json:"id"`
    Email string `json:"email"`
    Phone []PhoneNumber `json:"phone"`
+   Address []string `json:"address"`
 }
 
 type AddressBook struct {

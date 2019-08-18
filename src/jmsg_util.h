@@ -1,6 +1,7 @@
 #ifndef JMSG_UTIL_H
 #define JMSG_UTIL_H
 #include <string>
+#include "jmsg_encodeable.h"
 bool JMsgIsDigit(char c);
 bool JMsgIsAlpha(char c);
 bool JMsgIsUnderLine(char c);
@@ -16,4 +17,6 @@ std::string JMsgGetFileExt(const std::string& fileName);
 std::string JMsgGetFirstCharBigerCase(const std::string& data);
 std::string JMsgGetFormatString(const char* format, ...);
 void JMsgAppendFormatString(std::string&, const char* format, ...);
+std::string JMsgToJson(IJMsgEncodeable& msg);
+bool JMsgFromJson(const std::string& json, IJMsgEncodeable & msg);
 #endif

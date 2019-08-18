@@ -3,6 +3,7 @@ Person = 1 {
     id : int = 2
     email : string = 3
     phone : []PhoneNumber = 4
+    address : []string = 5;
 }
 
 PhoneNumber = 2 {

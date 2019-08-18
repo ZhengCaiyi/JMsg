@@ -3,12 +3,12 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include "json/value.h"
 #include "jmsg_encodeable.h"
+#include "rapidjson/rapidjson.h"
+#include "rapidjson/document.h"
 using namespace std;
-class JMsgWriter;
-class JMsgReader;
 class JMsgProto;
+
 enum userInfoTypeIds {
    kPhoneNumber = 2,
    kPerson = 1,
@@ -24,10 +24,8 @@ public:
    PhoneNumber();
    string number;
    int type;
-   virtual void encode(JMsgWriter* writer);
-   virtual bool decode(JMsgReader* reader);
-   virtual void encodeJson( Json::Value& val);
-   virtual bool decodeJson( Json::Value& val);
+   virtual void encodeJson(rapidjson::Document& doc, rapidjson::Value& val);
+   virtual bool decodeJson(rapidjson::Value& val);
 };
 
 class Person : public IJMsgEncodeable{
@@ -37,20 +35,17 @@ public:
    int id;
    string email;
    std::vector<PhoneNumber> phone;
-   virtual void encode(JMsgWriter* writer);
-   virtual bool decode(JMsgReader* reader);
-   virtual void encodeJson( Json::Value& val);
-   virtual bool decodeJson( Json::Value& val);
+   std::vector<string> address;
+   virtual void encodeJson(rapidjson::Document& doc, rapidjson::Value& val);
+   virtual bool decodeJson(rapidjson::Value& val);
 };
 
 class AddressBook : public IJMsgEncodeable{
 public:
    AddressBook();
    std::vector<Person> person;
-   virtual void encode(JMsgWriter* writer);
-   virtual bool decode(JMsgReader* reader);
-   virtual void encodeJson( Json::Value& val);
-   virtual bool decodeJson( Json::Value& val);
+   virtual void encodeJson(rapidjson::Document& doc, rapidjson::Value& val);
+   virtual bool decodeJson(rapidjson::Value& val);
 };
 
 #endif
