@@ -51,19 +51,6 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 	writer.addIndent();
 	writer.writeLine("m_msgId = %d;", type->m_id);
 
-	for(size_t i = 0; i < type->m_vecFields.size(); i++) {
-		JMsgField* field = type->m_vecFields[i];
-		if(field->m_isArray) {
-			continue;
-		}
-
-		if(field->m_type == "double" || field->m_type == "int" || field->m_type == "int64") {
-           
-			writer.writeLine("%s = 0;", field->m_name.c_str());
-		} else if(field->m_type == "bool") {
-			writer.writeLine("%s = false;", field->m_name.c_str());
-		}
-	}
 	writer.removeIndent();
 	writer.writeLine("}");
 	writer.writeLine("");		
