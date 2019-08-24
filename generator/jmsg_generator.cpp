@@ -77,7 +77,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
                         typeName = "int64_t";
                     }
                     writer.writeLine("std::vector<%s> arrayValue;", typeName.c_str());
-                    writer.writeLine("if(!jsonValue.IsArray()) return;");
+                    writer.writeLine("if(!jsonValue.IsArray()) return false;");
 					writer.writeLine("for(size_t i = 0; i < jsonValue.Size(); i++) {");
 					writer.addIndent();
 					if(field->m_type == "string") {
@@ -114,7 +114,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
                 else if(field->m_type == "double") {
 					writer.writeLine("if(jsonValue.IsDouble()) value->%s = jsonValue.GetDouble();", field->m_name.c_str());
 				}else if(field->m_typeId != 0) {
-                    writer.writeLine("if(!jsonValue.IsObject()) return;");
+                    writer.writeLine("if(!jsonValue.IsObject()) return false;");
                     writer.writeLine("%s decodedValue;", field->m_type.c_str());
 					writer.writeLine("if(decodedValue.decodeJson(jsonValue)) {", field->m_name.c_str());
                     writer.addIndent();
