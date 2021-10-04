@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "jmsg_util.h"
+#include "jmsg_encodeable.h"
+#include "rapidjson/document.h"
+
+#include "rapidjson/rapidjson.h"
+
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 using namespace std;
 bool JMsgIsDigit(char c) {
 	return c >= '0' && c <= '9';
@@ -20,7 +27,7 @@ bool JMsgIsEmptyChar(char c) {
 
 bool JMsgGetFileString(const std::string& path, string& data) {
 	FILE* file;
-	file = fopen(path.c_str(), "rb");
+	file = fopen(path.c_str(), "r");
 
 	if (!file) {
 		return false;
@@ -133,6 +140,31 @@ void JMsgAppendFormatString(std::string& data, const char* format, ...) {
 	} else {
 		data.append(buf);
 	}  
+}
+
+std::string JMsgToJson(IJMsgEncodeable & msg)
+{
+    rapidjson::Document doc;
+    doc.SetObject();
+    msg.encodeJson(doc, doc);
+
+    rapidjson::StringBuffer buffer;
+    buffer.Clear();
+    rapidjson::Writer<rapidjson::StringBuffer> bufferwriter(buffer);
+    doc.Accept(bufferwriter);
+    return buffer.GetString();
+}
+
+bool JMsgFromJson(const string & json, IJMsgEncodeable & msg)
+{
+    rapidjson::Document doc;
+    doc.Parse(json.c_str());
+
+    if (!doc.IsObject()) {
+        return false;
+    }
+    auto obj = doc.GetObject();
+    return msg.decodeJson(doc);
 }
 
 bool JMsgIsChangeLine( char c )

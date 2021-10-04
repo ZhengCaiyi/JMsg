@@ -1,31 +1,31 @@
 #include "userInfo.h"
 #include "jmsg.h"
-#include "json/value.h"
 static const unsigned char s_protoString []= {
    0x50,0x65,0x72,0x73,0x6f,0x6e,0x20,0x3d,0x20,0x31,
-   0x20,0x7b,0x0d,0x0a,0x20,0x20,0x20,0x20,0x6e,0x61,
-   0x6d,0x65,0x20,0x3a,0x20,0x73,0x74,0x72,0x69,0x6e,
-   0x67,0x20,0x3d,0x20,0x31,0x0d,0x0a,0x20,0x20,0x20,
-   0x20,0x69,0x64,0x20,0x3a,0x20,0x69,0x6e,0x74,0x20,
-   0x3d,0x20,0x32,0x0d,0x0a,0x20,0x20,0x20,0x20,0x65,
-   0x6d,0x61,0x69,0x6c,0x20,0x3a,0x20,0x73,0x74,0x72,
-   0x69,0x6e,0x67,0x20,0x3d,0x20,0x33,0x0d,0x0a,0x20,
-   0x20,0x20,0x20,0x70,0x68,0x6f,0x6e,0x65,0x20,0x3a,
-   0x20,0x5b,0x5d,0x50,0x68,0x6f,0x6e,0x65,0x4e,0x75,
-   0x6d,0x62,0x65,0x72,0x20,0x3d,0x20,0x34,0x0d,0x0a,
-   0x7d,0x0d,0x0a,0x0d,0x0a,0x50,0x68,0x6f,0x6e,0x65,
-   0x4e,0x75,0x6d,0x62,0x65,0x72,0x20,0x3d,0x20,0x32,
-   0x20,0x7b,0x0d,0x0a,0x20,0x20,0x20,0x20,0x6e,0x75,
+   0x20,0x7b,0x0a,0x20,0x20,0x20,0x20,0x6e,0x61,0x6d,
+   0x65,0x20,0x3a,0x20,0x73,0x74,0x72,0x69,0x6e,0x67,
+   0x20,0x3d,0x20,0x31,0x0a,0x20,0x20,0x20,0x20,0x69,
+   0x64,0x20,0x3a,0x20,0x69,0x6e,0x74,0x20,0x3d,0x20,
+   0x32,0x0a,0x20,0x20,0x20,0x20,0x65,0x6d,0x61,0x69,
+   0x6c,0x20,0x3a,0x20,0x73,0x74,0x72,0x69,0x6e,0x67,
+   0x20,0x3d,0x20,0x33,0x0a,0x20,0x20,0x20,0x20,0x70,
+   0x68,0x6f,0x6e,0x65,0x20,0x3a,0x20,0x5b,0x5d,0x50,
+   0x68,0x6f,0x6e,0x65,0x4e,0x75,0x6d,0x62,0x65,0x72,
+   0x20,0x3d,0x20,0x34,0x0a,0x20,0x20,0x20,0x20,0x61,
+   0x64,0x64,0x72,0x65,0x73,0x73,0x20,0x3a,0x20,0x5b,
+   0x5d,0x73,0x74,0x72,0x69,0x6e,0x67,0x20,0x3d,0x20,
+   0x35,0x3b,0x0a,0x7d,0x0a,0x0a,0x50,0x68,0x6f,0x6e,
+   0x65,0x4e,0x75,0x6d,0x62,0x65,0x72,0x20,0x3d,0x20,
+   0x32,0x20,0x7b,0x0a,0x20,0x20,0x20,0x20,0x6e,0x75,
    0x6d,0x62,0x65,0x72,0x20,0x3a,0x20,0x73,0x74,0x72,
-   0x69,0x6e,0x67,0x20,0x3d,0x20,0x31,0x0d,0x0a,0x20,
-   0x20,0x20,0x20,0x74,0x79,0x70,0x65,0x20,0x3a,0x20,
-   0x69,0x6e,0x74,0x20,0x3d,0x20,0x32,0x0d,0x0a,0x7d,
-   0x0d,0x0a,0x0d,0x0a,0x41,0x64,0x64,0x72,0x65,0x73,
-   0x73,0x42,0x6f,0x6f,0x6b,0x20,0x3d,0x20,0x33,0x20,
-   0x7b,0x0d,0x0a,0x20,0x20,0x20,0x20,0x70,0x65,0x72,
-   0x73,0x6f,0x6e,0x20,0x3a,0x20,0x5b,0x5d,0x50,0x65,
-   0x72,0x73,0x6f,0x6e,0x20,0x3d,0x20,0x31,0x0d,0x0a,
-   0x7d,0x00
+   0x69,0x6e,0x67,0x20,0x3d,0x20,0x31,0x0a,0x20,0x20,
+   0x20,0x20,0x74,0x79,0x70,0x65,0x20,0x3a,0x20,0x69,
+   0x6e,0x74,0x20,0x3d,0x20,0x32,0x0a,0x7d,0x0a,0x0a,
+   0x41,0x64,0x64,0x72,0x65,0x73,0x73,0x42,0x6f,0x6f,
+   0x6b,0x20,0x3d,0x20,0x33,0x20,0x7b,0x0a,0x20,0x20,
+   0x20,0x20,0x70,0x65,0x72,0x73,0x6f,0x6e,0x20,0x3a,
+   0x20,0x5b,0x5d,0x50,0x65,0x72,0x73,0x6f,0x6e,0x20,
+   0x3d,0x20,0x31,0x0a,0x7d,0x00
 };
 
 JMsgProto* userInfoCreateProto() { return JMsgProto::createProto((char*)s_protoString); }
@@ -47,16 +47,17 @@ PhoneNumber::PhoneNumber() {
    type = 0;
 }
 
-static bool onPhoneNumberDecode(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
+
+static bool onPhoneNumberDecodeJson(JMsgProto* proto, JMsgField* field, rapidjson::Value& jsonValue, void* args) {
    bool isSuccess = false;
    PhoneNumber* value = (PhoneNumber*)args;
    switch(field->m_id) {
    case 1: {
-      value->number = reader->readString(isSuccess);
+      if(jsonValue.IsString()) value->number = jsonValue.GetString();
       break;
    }
    case 2: {
-      value->type = reader->readInt(isSuccess);
+      if(jsonValue.IsInt()) value->type = jsonValue.GetInt();
       break;
    }
    default:
@@ -65,15 +66,20 @@ static bool onPhoneNumberDecode(JMsgProto* proto, JMsgField* field, JMsgReader* 
    return isSuccess;
 }
 
-static bool onPhoneNumberEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
+static bool onPhoneNumberEncodeJson(JMsgProto* proto, JMsgField* field, rapidjson::Document& doc, rapidjson::Value& jsonValue, void* args) {
+   auto& allocator = doc.GetAllocator();
    PhoneNumber* value = (PhoneNumber*)args;
    switch(field->m_id) {
    case 1: {
-      writer->writeStringField(field, value->number);
+      if(!value->number.has_value()) break;
+      rapidjson::Value valStr;
+      valStr.SetString(value->number.value().c_str(), value->number.value().size(), allocator);
+      jsonValue.AddMember("number", valStr.Move(), allocator);
       break;
    }
    case 2: {
-      writer->writeIntField(field, value->type);
+      if(!value->type.has_value()) break;
+      jsonValue.AddMember("type", value->type.value(), allocator);
       break;
    }
    default:
@@ -82,54 +88,11 @@ static bool onPhoneNumberEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* 
    return true;
 }
 
-void PhoneNumber::encode(JMsgWriter* writer) {
-   g_proto->encode(2, writer, onPhoneNumberEncode, this);
+void PhoneNumber::encodeJson( rapidjson::Document& doc, rapidjson::Value& writer) {
+   g_proto->encodeJson(2, doc, writer, onPhoneNumberEncodeJson, this);
 }
 
-bool PhoneNumber::decode(JMsgReader* reader) {
-   return g_proto->decode(reader, onPhoneNumberDecode, this) == 2;
-}
-
-static bool onPhoneNumberDecodeJson(JMsgProto* proto, JMsgField* field, Json::Value& jsonValue, void* args) {
-   bool isSuccess = false;
-   PhoneNumber* value = (PhoneNumber*)args;
-   switch(field->m_id) {
-   case 1: {
-      value->number = jsonValue.isString() ? jsonValue.asString() : "";
-      break;
-   }
-   case 2: {
-      value->type = jsonValue.isInt() ? jsonValue.asInt() : 0;
-      break;
-   }
-   default:
-      break;
-   }
-   return isSuccess;
-}
-
-static bool onPhoneNumberEncodeJson(JMsgProto* proto, JMsgField* field, Json::Value& jsonValue, void* args) {
-   PhoneNumber* value = (PhoneNumber*)args;
-   switch(field->m_id) {
-   case 1: {
-      jsonValue["number"] = value->number;
-      break;
-   }
-   case 2: {
-      jsonValue["type"] = value->type;
-      break;
-   }
-   default:
-      break;
-   }
-   return true;
-}
-
-void PhoneNumber::encodeJson( Json::Value& writer) {
-   g_proto->encodeJson(2, writer, onPhoneNumberEncodeJson, this);
-}
-
-bool PhoneNumber::decodeJson( Json::Value& reader) {
+bool PhoneNumber::decodeJson(rapidjson::Value& reader) {
    return g_proto->decodeJson(2, reader, onPhoneNumberDecodeJson, this);
 }
 Person::Person() {
@@ -137,98 +100,39 @@ Person::Person() {
    id = 0;
 }
 
-static bool onPersonDecode(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
+
+static bool onPersonDecodeJson(JMsgProto* proto, JMsgField* field, rapidjson::Value& jsonValue, void* args) {
    bool isSuccess = false;
    Person* value = (Person*)args;
    switch(field->m_id) {
    case 1: {
-      value->name = reader->readString(isSuccess);
+      if(jsonValue.IsString()) value->name = jsonValue.GetString();
       break;
    }
    case 2: {
-      value->id = reader->readInt(isSuccess);
+      if(jsonValue.IsInt()) value->id = jsonValue.GetInt();
       break;
    }
    case 3: {
-      value->email = reader->readString(isSuccess);
+      if(jsonValue.IsString()) value->email = jsonValue.GetString();
       break;
    }
    case 4: {
-      int arrayLen = reader->readArrayLength(isSuccess);
-      if(!isSuccess) break;
-      for(int i = 0; i < arrayLen; i++) {
-         PhoneNumber item;
-         isSuccess = item.decode(reader);
-         if(!isSuccess) break;
-         value->phone.push_back(item);
-      }
-      break;
-   }
-   default:
-      break;
-   }
-   return isSuccess;
-}
-
-static bool onPersonEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
-   Person* value = (Person*)args;
-   switch(field->m_id) {
-   case 1: {
-      writer->writeStringField(field, value->name);
-      break;
-   }
-   case 2: {
-      writer->writeIntField(field, value->id);
-      break;
-   }
-   case 3: {
-      writer->writeStringField(field, value->email);
-      break;
-   }
-   case 4: {
-      int arrayLen = (int)value->phone.size();
-      writer->writeArrayHeader(field, arrayLen);
-      for(int i = 0; i < arrayLen; i++) {
-         value->phone[i].encode(writer);
-      }
-      break;
-   }
-   default:
-      break;
-   }
-   return true;
-}
-
-void Person::encode(JMsgWriter* writer) {
-   g_proto->encode(1, writer, onPersonEncode, this);
-}
-
-bool Person::decode(JMsgReader* reader) {
-   return g_proto->decode(reader, onPersonDecode, this) == 1;
-}
-
-static bool onPersonDecodeJson(JMsgProto* proto, JMsgField* field, Json::Value& jsonValue, void* args) {
-   bool isSuccess = false;
-   Person* value = (Person*)args;
-   switch(field->m_id) {
-   case 1: {
-      value->name = jsonValue.isString() ? jsonValue.asString() : "";
-      break;
-   }
-   case 2: {
-      value->id = jsonValue.isInt() ? jsonValue.asInt() : 0;
-      break;
-   }
-   case 3: {
-      value->email = jsonValue.isString() ? jsonValue.asString() : "";
-      break;
-   }
-   case 4: {
-      for(size_t i = 0; i < jsonValue.size(); i++) {
+      std::vector<PhoneNumber> arrayValue;
+      for(size_t i = 0; i < jsonValue.Size(); i++) {
          PhoneNumber item;
          isSuccess = item.decodeJson(jsonValue[(int)i]);
          if(!isSuccess) break;
-         value->phone.push_back(item);
+         arrayValue.push_back(item);
+         value->phone = arrayValue;
+      }
+      break;
+   }
+   case 5: {
+      std::vector<string> arrayValue;
+      for(size_t i = 0; i < jsonValue.Size(); i++) {
+         arrayValue.push_back(jsonValue[(int)i].IsString() ? jsonValue[(int)i].GetString() : "");
+         value->address = arrayValue;
       }
       break;
    }
@@ -238,30 +142,49 @@ static bool onPersonDecodeJson(JMsgProto* proto, JMsgField* field, Json::Value& 
    return isSuccess;
 }
 
-static bool onPersonEncodeJson(JMsgProto* proto, JMsgField* field, Json::Value& jsonValue, void* args) {
+static bool onPersonEncodeJson(JMsgProto* proto, JMsgField* field, rapidjson::Document& doc, rapidjson::Value& jsonValue, void* args) {
+   auto& allocator = doc.GetAllocator();
    Person* value = (Person*)args;
    switch(field->m_id) {
    case 1: {
-      jsonValue["name"] = value->name;
+      if(!value->name.has_value()) break;
+      rapidjson::Value valStr;
+      valStr.SetString(value->name.value().c_str(), value->name.value().size(), allocator);
+      jsonValue.AddMember("name", valStr.Move(), allocator);
       break;
    }
    case 2: {
-      jsonValue["id"] = value->id;
+      if(!value->id.has_value()) break;
+      jsonValue.AddMember("id", value->id.value(), allocator);
       break;
    }
    case 3: {
-      jsonValue["email"] = value->email;
+      if(!value->email.has_value()) break;
+      rapidjson::Value valStr;
+      valStr.SetString(value->email.value().c_str(), value->email.value().size(), allocator);
+      jsonValue.AddMember("email", valStr.Move(), allocator);
       break;
    }
    case 4: {
-      Json::Value arrayValue;
-      arrayValue.resize(0);
-      for(size_t i = 0; i < value->phone.size(); i++) {
-         Json::Value itemValue;
-         value->phone[i].encodeJson(itemValue);
-         arrayValue.append(itemValue);
+      if(!value->phone.has_value()) break;
+      rapidjson::Value arrayValue(rapidjson::kArrayType);
+      for(size_t i = 0; i < value->phone.value().size(); i++) {
+         rapidjson::Value itemValue(rapidjson::kObjectType);
+         value->phone.value()[i].encodeJson(doc, itemValue);
+         arrayValue.PushBack(itemValue.Move(), allocator);
       }
-      jsonValue["phone"] = arrayValue;
+      jsonValue.AddMember("phone", arrayValue, allocator);
+      break;
+   }
+   case 5: {
+      if(!value->address.has_value()) break;
+      rapidjson::Value arrayValue(rapidjson::kArrayType);
+      for(size_t i = 0; i < value->address.value().size(); i++) {
+         rapidjson::Value valStr;
+         valStr.SetString(value->address.value()[i].c_str(), value->address.value()[i].size(), allocator);
+         arrayValue.PushBack(valStr.Move(), allocator);
+      }
+      jsonValue.AddMember("address", arrayValue, allocator);
       break;
    }
    default:
@@ -270,73 +193,30 @@ static bool onPersonEncodeJson(JMsgProto* proto, JMsgField* field, Json::Value& 
    return true;
 }
 
-void Person::encodeJson( Json::Value& writer) {
-   g_proto->encodeJson(1, writer, onPersonEncodeJson, this);
+void Person::encodeJson( rapidjson::Document& doc, rapidjson::Value& writer) {
+   g_proto->encodeJson(1, doc, writer, onPersonEncodeJson, this);
 }
 
-bool Person::decodeJson( Json::Value& reader) {
+bool Person::decodeJson(rapidjson::Value& reader) {
    return g_proto->decodeJson(1, reader, onPersonDecodeJson, this);
 }
 AddressBook::AddressBook() {
    m_msgId = 3;
 }
 
-static bool onAddressBookDecode(JMsgProto* proto, JMsgField* field, JMsgReader* reader, void* args) {
+
+static bool onAddressBookDecodeJson(JMsgProto* proto, JMsgField* field, rapidjson::Value& jsonValue, void* args) {
    bool isSuccess = false;
    AddressBook* value = (AddressBook*)args;
    switch(field->m_id) {
    case 1: {
-      int arrayLen = reader->readArrayLength(isSuccess);
-      if(!isSuccess) break;
-      for(int i = 0; i < arrayLen; i++) {
-         Person item;
-         isSuccess = item.decode(reader);
-         if(!isSuccess) break;
-         value->person.push_back(item);
-      }
-      break;
-   }
-   default:
-      break;
-   }
-   return isSuccess;
-}
-
-static bool onAddressBookEncode(JMsgProto* proto, JMsgField* field, JMsgWriter* writer, void* args) {
-   AddressBook* value = (AddressBook*)args;
-   switch(field->m_id) {
-   case 1: {
-      int arrayLen = (int)value->person.size();
-      writer->writeArrayHeader(field, arrayLen);
-      for(int i = 0; i < arrayLen; i++) {
-         value->person[i].encode(writer);
-      }
-      break;
-   }
-   default:
-      break;
-   }
-   return true;
-}
-
-void AddressBook::encode(JMsgWriter* writer) {
-   g_proto->encode(3, writer, onAddressBookEncode, this);
-}
-
-bool AddressBook::decode(JMsgReader* reader) {
-   return g_proto->decode(reader, onAddressBookDecode, this) == 3;
-}
-
-static bool onAddressBookDecodeJson(JMsgProto* proto, JMsgField* field, Json::Value& jsonValue, void* args) {
-   bool isSuccess = false;
-   AddressBook* value = (AddressBook*)args;
-   switch(field->m_id) {
-   case 1: {
-      for(size_t i = 0; i < jsonValue.size(); i++) {
+      std::vector<Person> arrayValue;
+      for(size_t i = 0; i < jsonValue.Size(); i++) {
          Person item;
          isSuccess = item.decodeJson(jsonValue[(int)i]);
          if(!isSuccess) break;
-         value->person.push_back(item);
+         arrayValue.push_back(item);
+         value->person = arrayValue;
       }
       break;
    }
@@ -346,18 +226,19 @@ static bool onAddressBookDecodeJson(JMsgProto* proto, JMsgField* field, Json::Va
    return isSuccess;
 }
 
-static bool onAddressBookEncodeJson(JMsgProto* proto, JMsgField* field, Json::Value& jsonValue, void* args) {
+static bool onAddressBookEncodeJson(JMsgProto* proto, JMsgField* field, rapidjson::Document& doc, rapidjson::Value& jsonValue, void* args) {
+   auto& allocator = doc.GetAllocator();
    AddressBook* value = (AddressBook*)args;
    switch(field->m_id) {
    case 1: {
-      Json::Value arrayValue;
-      arrayValue.resize(0);
-      for(size_t i = 0; i < value->person.size(); i++) {
-         Json::Value itemValue;
-         value->person[i].encodeJson(itemValue);
-         arrayValue.append(itemValue);
+      if(!value->person.has_value()) break;
+      rapidjson::Value arrayValue(rapidjson::kArrayType);
+      for(size_t i = 0; i < value->person.value().size(); i++) {
+         rapidjson::Value itemValue(rapidjson::kObjectType);
+         value->person.value()[i].encodeJson(doc, itemValue);
+         arrayValue.PushBack(itemValue.Move(), allocator);
       }
-      jsonValue["person"] = arrayValue;
+      jsonValue.AddMember("person", arrayValue, allocator);
       break;
    }
    default:
@@ -366,10 +247,10 @@ static bool onAddressBookEncodeJson(JMsgProto* proto, JMsgField* field, Json::Va
    return true;
 }
 
-void AddressBook::encodeJson( Json::Value& writer) {
-   g_proto->encodeJson(3, writer, onAddressBookEncodeJson, this);
+void AddressBook::encodeJson( rapidjson::Document& doc, rapidjson::Value& writer) {
+   g_proto->encodeJson(3, doc, writer, onAddressBookEncodeJson, this);
 }
 
-bool AddressBook::decodeJson( Json::Value& reader) {
+bool AddressBook::decodeJson(rapidjson::Value& reader) {
    return g_proto->decodeJson(3, reader, onAddressBookDecodeJson, this);
 }
