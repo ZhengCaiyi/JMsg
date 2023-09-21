@@ -37,8 +37,9 @@ void writeClassDeclare(const string& baseDir, JMsgType* type, JMSGCodeWriter& wr
 		}
 	}	
 
-    writer.writeLine("virtual void encodeJson(rapidjson::Document& doc, rapidjson::Value& val);");
-    writer.writeLine("virtual bool decodeJson(rapidjson::Value& val);");
+    writer.writeLine("void encodeJson(rapidjson::Document& doc, rapidjson::Value& val) override;");
+    writer.writeLine("bool decodeJson(rapidjson::Value& val) override;");
+	writer.writeLine("std::string getMsgName() override {return \"%s\";}", type->m_typeName.c_str());
 	
 	writer.removeIndent();
 	writer.writeLine("};");

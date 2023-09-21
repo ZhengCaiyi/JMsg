@@ -10,6 +10,7 @@ class IJMsgEncodeable {
 public:
     virtual void encodeJson(rapidjson::Document&, rapidjson::Value& val) = 0;
     virtual bool decodeJson(rapidjson::Value& val) = 0;
+    virtual std::string getMsgName() = 0;
 	int getMsgId() { return m_msgId; } 
 protected:
 	int m_msgId;
