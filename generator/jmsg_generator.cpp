@@ -31,9 +31,9 @@ void writeClassDeclare(const string& baseDir, JMsgType* type, JMSGCodeWriter& wr
             typeName = "int64_t";
         }
 		if(!field->m_isArray) {           
-			writer.writeLine("absl::optional<%s> %s;", typeName.c_str(), field->m_name.c_str());
+			writer.writeLine("std::optional<%s> %s;", typeName.c_str(), field->m_name.c_str());
 		} else {
-			writer.writeLine("absl::optional<std::vector<%s>> %s;", typeName.c_str(), field->m_name.c_str());
+			writer.writeLine("std::optional<std::vector<%s>> %s;", typeName.c_str(), field->m_name.c_str());
 		}
 	}	
 
@@ -49,7 +49,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 
 	writer.writeLine("%s::%s() {", type->m_typeName.c_str(), type->m_typeName.c_str());
 	writer.addIndent();
-	writer.writeLine("m_msgId = %d;", type->m_id);
+	//writer.writeLine("m_msgId = %d;", type->m_id);
 
 	writer.removeIndent();
 	writer.writeLine("}");
@@ -64,11 +64,18 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 		if(type->m_vecFields.size() != 0) {
 			writer.writeLine("bool isSuccess = false;");
 			writer.writeLine("%s* value = (%s*)args;", type->m_typeName.c_str(),  type->m_typeName.c_str());
-			writer.writeLine("switch(field->m_id) {");
+			bool firstIf = true;
+			//writer.writeLine("switch(field->m_name) {");
 			for(size_t i = 0; i < type->m_vecFields.size(); i++) {
 				JMsgField* field = type->m_vecFields[i];
 				printf("generating field:%s\n", field->m_name.c_str());
-				writer.writeLine("case %d: {", field->m_id);
+				if(firstIf) {
+					writer.writeLine("if(field->m_name == \"%s\") {", field->m_name.c_str());
+				} else {
+					writer.writeLine("else if(field->m_name == \"%s\") {", field->m_name.c_str());
+				}
+				
+				firstIf = false;
 				writer.addIndent();
 
 				if(field->m_isArray) {
@@ -92,7 +99,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 						writer.writeLine("arrayValue.push_back(jsonValue[(int)i].IsBool() ? jsonValue[(int)i].GetBool() : false);");
 					} else if(field->m_type == "double"){
 						writer.writeLine("arrayValue.push_back(jsonValue[(int)i].IsDouble() ? jsonValue[(int)i].GetDouble(): 0);");
-					} else if(field->m_typeId != 0) {
+					} else if(field->m_type != "") {
 						writer.writeLine("%s item;", field->m_type.c_str());
 						writer.writeLine("isSuccess = item.decodeJson(jsonValue[(int)i]);");
 						writer.writeLine("if(!isSuccess) break;");
@@ -113,7 +120,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
                 }
                 else if(field->m_type == "double") {
 					writer.writeLine("if(jsonValue.IsDouble()) value->%s = jsonValue.GetDouble();", field->m_name.c_str());
-				}else if(field->m_typeId != 0) {
+				}else if(field->m_type != "") {
                     writer.writeLine("if(!jsonValue.IsObject()) return false;");
                     writer.writeLine("%s decodedValue;", field->m_type.c_str());
 					writer.writeLine("if(decodedValue.decodeJson(jsonValue)) {", field->m_name.c_str());
@@ -122,17 +129,11 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
                     writer.removeIndent();
                     writer.writeLine("}");
 				}
-				writer.writeLine("break;");
 				writer.removeIndent();
 				writer.writeLine("}");
 			}
 			writer.removeIndent();
 			writer.addIndent();
-			writer.writeLine("default:");
-			writer.addIndent();
-			writer.writeLine("break;");
-			writer.removeIndent();
-			writer.writeLine("}");
 			writer.writeLine("return isSuccess;");
 		} else {
 			writer.writeLine("return true;");
@@ -148,15 +149,23 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 		if(type->m_vecFields.size() != 0) {
             writer.writeLine("auto& allocator = doc.GetAllocator();");
 			writer.writeLine("%s* value = (%s*)args;", type->m_typeName.c_str(),  type->m_typeName.c_str());
-			writer.writeLine("switch(field->m_id) {");
+			bool firstIf = true;
+			//writer.writeLine("switch(field->m_name) {");
 			for(size_t i = 0; i < type->m_vecFields.size(); i++) {
 
 				JMsgField* field = type->m_vecFields[i];
 				printf("generating field:%s\n", field->m_name.c_str());
-				writer.writeLine("case %d: {", field->m_id);
+				if(firstIf) {
+					writer.writeLine("if(field->m_name == \"%s\") {", field->m_name.c_str());
+				} else {
+					writer.writeLine("else if(field->m_name == \"%s\") {", field->m_name.c_str());
+				}
+				
+				firstIf = false;
 				writer.addIndent();
 				if(field->m_isArray) {
-                    writer.writeLine("if(!value->%s.has_value()) break;", field->m_name.c_str());
+                    writer.writeLine("if(value->%s.has_value()) {", field->m_name.c_str());
+					writer.addIndent();
 					writer.writeLine("rapidjson::Value arrayValue(rapidjson::kArrayType);");
 					writer.writeLine("for(size_t i = 0; i < value->%s.value().size(); i++) {", field->m_name.c_str());
 					writer.addIndent();
@@ -166,7 +175,7 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
                         writer.writeLine("rapidjson::Value valStr;");
                         writer.writeLine("valStr.SetString(value->%s.value()[i].c_str(), (rapidjson::SizeType)value->%s.value()[i].size(), allocator);", field->m_name.c_str(), field->m_name.c_str());
                         writer.writeLine("arrayValue.PushBack(valStr.Move(), allocator);");
-                    } else if(field->m_typeId != 0) {
+                    } else if(field->m_type != "") {
 						writer.writeLine("rapidjson::Value itemValue(rapidjson::kObjectType);");
 						writer.writeLine("value->%s.value()[i].encodeJson(doc, itemValue);", field->m_name.c_str());
 						writer.writeLine("arrayValue.PushBack(itemValue.Move(), allocator);");
@@ -174,32 +183,36 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 					writer.removeIndent();
 					writer.writeLine("}");
 					writer.writeLine("jsonValue.AddMember(\"%s\", arrayValue, allocator);", field->m_name.c_str());
+					writer.removeIndent();
+					writer.writeLine("}");
 				} else if (field->m_type == "string") {
-                    writer.writeLine("if(!value->%s.has_value()) break;", field->m_name.c_str());
+                    writer.writeLine("if(value->%s.has_value()) {", field->m_name.c_str());
+					writer.addIndent();
                     writer.writeLine("rapidjson::Value valStr;");
                     writer.writeLine("valStr.SetString(value->%s.value().c_str(), (rapidjson::SizeType)value->%s.value().size(), allocator);", field->m_name.c_str(), field->m_name.c_str());
                     writer.writeLine("jsonValue.AddMember(\"%s\", valStr.Move(), allocator);", field->m_name.c_str());
+					writer.removeIndent();
+					writer.writeLine("}");
                 }
                 else if(field->m_type == "int" || field->m_type == "int64" || field->m_type == "bool" || field->m_type == "double") {
-                    writer.writeLine("if(!value->%s.has_value()) break;", field->m_name.c_str());
+                    writer.writeLine("if(value->%s.has_value()){", field->m_name.c_str());
+					writer.addIndent();
 					writer.writeLine("jsonValue.AddMember(\"%s\", value->%s.value(), allocator);", field->m_name.c_str(), field->m_name.c_str(), field->m_name.c_str());
-				} else if(field->m_typeId != 0) {
-                    writer.writeLine("if(!value->%s.has_value()) break;", field->m_name.c_str());
+					writer.removeIndent();
+					writer.writeLine("}");
+				} else if(field->m_type != "") {
+                    writer.writeLine("if(value->%s.has_value()) {", field->m_name.c_str());
 					writer.writeLine("rapidjson::Value itemValue(rapidjson::kObjectType);");
 					writer.writeLine("value->%s.value().encodeJson(doc, itemValue);", field->m_name.c_str());
 					writer.writeLine("jsonValue.AddMember(\"%s\", itemValue.Move(), allocator);", field->m_name.c_str());
+					writer.removeIndent();
+					writer.writeLine("}");
 				}
-				writer.writeLine("break;");
 				writer.removeIndent();
 				writer.writeLine("}");
 			}
 			writer.removeIndent();
 			writer.addIndent();
-			writer.writeLine("default:");
-			writer.addIndent();
-			writer.writeLine("break;");
-			writer.removeIndent();
-			writer.writeLine("}");
 		}
 		writer.writeLine("return true;");
 		writer.removeIndent();
@@ -207,13 +220,13 @@ void writeClassImplement(const string& baseDir, JMsgType* type, JMSGCodeWriter& 
 		writer.writeLine("");
 		writer.writeLine("void %s::encodeJson( rapidjson::Document& doc, rapidjson::Value& writer) {", type->m_typeName.c_str());
 		writer.addIndent();
-		writer.writeLine("g_proto->encodeJson(%d, doc, writer, on%sEncodeJson, this);", type->m_id, type->m_typeName.c_str());
+		writer.writeLine("g_proto->encodeJson(\"%s\", doc, writer, on%sEncodeJson, this);", type->m_typeName.c_str(), type->m_typeName.c_str());
 		writer.removeIndent();
 		writer.writeLine("}");
 		writer.writeLine("");
 		writer.writeLine("bool %s::decodeJson(rapidjson::Value& reader) {", type->m_typeName.c_str());
 		writer.addIndent();
-		writer.writeLine("return g_proto->decodeJson(%d, reader, on%sDecodeJson, this);", type->m_id, type->m_typeName.c_str());
+		writer.writeLine("return g_proto->decodeJson(\"%s\", reader, on%sDecodeJson, this);", type->m_typeName.c_str(), type->m_typeName.c_str());
 		writer.removeIndent();
 		writer.writeLine("}");
 	}
@@ -265,7 +278,7 @@ static void generateGoJsonDefine(const string& outputFileName, std::vector<JMsgT
 	}
 }
 
-void generateHeaderFile(const std::string& outputPath, const string& prefix, std::vector<JMsgType*>& types) {
+void generateHeaderFile(const std::string& outputPath, const string& prefix, std::vector<JMsgType*>& types, const string& msgNamespace) {
 	JMSGCodeWriter headerWriter;		
 	headerWriter.open(outputPath + prefix + ".h");
 	headerWriter.writeLine("#ifndef %s_h",  prefix.c_str());
@@ -273,17 +286,21 @@ void generateHeaderFile(const std::string& outputPath, const string& prefix, std
 	headerWriter.writeLine("#include <stdio.h>");
 	headerWriter.writeLine("#include <vector>");
 	headerWriter.writeLine("#include <string>");
-    headerWriter.writeLine("#include <absl/types/optional.h>");
+    headerWriter.writeLine("#include <optional>");
 	headerWriter.writeLine("#include \"jmsg_encodeable.h\"");
     headerWriter.writeLine("#include \"rapidjson/rapidjson.h\"");
     headerWriter.writeLine("#include \"rapidjson/document.h\"");
 	headerWriter.writeLine("using namespace std;");
 	headerWriter.writeLine("class JMsgProto;");
+	if(msgNamespace != "") {
+		headerWriter.writeLine("namespace %s {", msgNamespace.c_str());
+	}
+	
     headerWriter.writeLine("");
 	headerWriter.writeLine("enum %sTypeIds {", prefix.c_str());
 	headerWriter.addIndent();
 	for(size_t i = 0; i < types.size(); i++) {
-		headerWriter.writeLine("k%s = %d,", types[i]->m_typeName.c_str(), types[i]->m_id);
+		headerWriter.writeLine("k%s,", types[i]->m_typeName.c_str());
 	};
 	headerWriter.removeIndent();
 	headerWriter.writeLine("};");
@@ -296,15 +313,22 @@ void generateHeaderFile(const std::string& outputPath, const string& prefix, std
 	for(size_t i = 0; i < types.size(); i++) {
 		writeClassDeclare(outputPath, types[i], headerWriter);
 	}
+
+	if(msgNamespace != "") {
+		headerWriter.writeLine("} // namespace %s", msgNamespace.c_str());
+	}
 	headerWriter.writeLine("#endif");
 }
 
-void generateCppFile(const std::string& outputPath, const string& prefix, std::vector<JMsgType*>& types, const string& content) {
+void generateCppFile(const std::string& outputPath, const string& prefix, std::vector<JMsgType*>& types, const string& content, const string& msgNamespace) {
 
 	JMSGCodeWriter cppWriter;
 	cppWriter.open(outputPath + prefix + ".cpp");
 	cppWriter.writeLine("#include \"%s.h\"", prefix.c_str());
 	cppWriter.writeLine("#include \"jmsg.h\"");
+	if(msgNamespace != "") {
+		cppWriter.writeLine("namespace %s {", msgNamespace.c_str());
+	}
 
 	cppWriter.write("static const unsigned char s_protoString []= {");
 	for(size_t i = 0; i < content.size(); i++) {
@@ -340,15 +364,29 @@ void generateCppFile(const std::string& outputPath, const string& prefix, std::v
 	for(size_t i = 0; i < types.size(); i++) {
 		writeClassImplement(outputPath, types[i], cppWriter);
 	}
+
+	if(msgNamespace != "") {
+		cppWriter.writeLine("} // namespace %s", msgNamespace.c_str());
+	}
 }
 
-void generateDeclareFile(const std::string& outputPath, const string& prefix, std::vector<JMsgType*>& types) {
+void generateDeclareFile(const std::string& outputPath, const string& prefix, std::vector<JMsgType*>& types, const std::string& msgNamespace) {
 	JMSGCodeWriter declareWriter;
 	declareWriter.open(outputPath + prefix + "Declare.h");
 	declareWriter.writeLine("#ifndef %sDeclare_h",  prefix.c_str());
 	declareWriter.writeLine("#define %sDeclare_h",  prefix.c_str());
+
+	if(msgNamespace != "") {
+		declareWriter.writeLine("namespace %s {", msgNamespace.c_str());
+	}
+
+
 	for(size_t i = 0; i < types.size(); i++) {
 		writeTypeDeclare(types[i], declareWriter);
+	}
+
+	if(msgNamespace != "") {
+		declareWriter.writeLine("} // namespace %s", msgNamespace.c_str());
 	}
 	declareWriter.writeLine("#endif");
 }
@@ -381,9 +419,13 @@ int main(int argc, char** argv) {
 	std::vector<JMsgType*>& types = proto->getAllTypes();
 	string outputPath = argv[2];
 	string prefix = argv[3];
+	string msgNamespace;
 
-	generateHeaderFile(outputPath, prefix, types);
-	generateCppFile(outputPath, prefix, types, content);
-	generateDeclareFile(outputPath, prefix, types);
-	generateGoJsonDefine(string(argv[2]) + argv[3] + ".go", types);
+	if(argc > 4) {
+		msgNamespace = argv[4];
+	}
+
+	generateHeaderFile(outputPath, prefix, types, msgNamespace);
+	generateCppFile(outputPath, prefix, types, content, msgNamespace);
+	generateDeclareFile(outputPath, prefix, types, msgNamespace);
 }

@@ -9,3 +9,4 @@ JMsg.suo
 example/jmsg_example.exe
 example/jmsg_generator.exe
 .vs/
+build/

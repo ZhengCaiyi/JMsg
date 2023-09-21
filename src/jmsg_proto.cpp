@@ -1,6 +1,4 @@
 #include "jmsg_proto.h"
-#include "jmsg_writer.h"
-#include "jmsg_reader.h"
 #include "jmsg_type.h"
 #include "jmsg_field.h"
 #include "jmsg_idl_parse.h"
@@ -23,7 +21,6 @@ JMsgProto*  JMsgProto::createProto(const string& idlString) {
 
 	for(size_t i = 0; i < proto->m_vecTypes.size(); i++) {
 		proto->m_mapNameToIndex[proto->m_vecTypes[i]->m_typeName] = i;
-		proto->m_mapIdToIndex[proto->m_vecTypes[i]->m_id] = i;
 	}
 	return proto;
 }
@@ -61,88 +58,10 @@ static string getQuoteString(const string& content) {
 	return ret;
 }
 
-void JMsgProto::toJson(JMsgReader* reader, int len, string& result)
-{
-	bool isSuccess = false;
-	int typeId = reader->readFieldId(isSuccess);
-	JMsgType* msgType = getTypeById(typeId);
-	int fieldId = 0;
-	if(!msgType) {
-		return;
-	}
-	result.append("{");
-	int currentFieldCount = 0;
-
-	do {
-		int fieldLen = 0;
-		JMsgField* field = NULL;
-		fieldLen = reader->readEncodedLen(isSuccess);
-		if (!fieldLen) {
-			break;
-		}
-			fieldId = reader->peekMessageTypeId(isSuccess);
-		
-
-		field = msgType->getFieldById(fieldId);
-
-
-		if (!field) {
-			reader->skipLen(fieldLen);
-			continue;
-		}
-		reader->readMessageTypeId(isSuccess);
-
-
-		if(currentFieldCount > 0) {
-			result.append(",");
-		}
-		if(!field->m_isArray) {
-			if(field->m_type == "int") {
-				JMsgAppendFormatString(result, "\"%s\": %d", field->m_name.c_str(), reader->readInt(isSuccess));
-			} else if(field->m_type == "double") {
-				JMsgAppendFormatString(result, "\"%s\": %f", field->m_name.c_str(), reader->readDouble(isSuccess));
-			}  else if(field->m_type == "string") {
-
-				JMsgAppendFormatString(result, "\"%s\": \"%s\"", field->m_name.c_str(), reader->readString(isSuccess).c_str());
-			} else if(field->m_type == "bool") {
-				JMsgAppendFormatString(result, "\"%s\": %s", field->m_name.c_str(), reader->readBool(isSuccess) ? "true" : "false");
-			} else {
-				JMsgAppendFormatString(result, "\"%s\": ", field->m_name.c_str());
-				toJson(reader, len, result);
-			}
-		} else {
-			int arrayCount = reader->readArrayLength(isSuccess);
-			JMsgAppendFormatString(result, "\"%s\": [", field->m_name.c_str());
-			bool arrayItemWritten = false;
-			for(int i = 0; i < arrayCount; i++) {
-				if(arrayItemWritten) {
-					JMsgAppendFormatString(result, ",");
-				}
-				if(field->m_type == "int") {
-					JMsgAppendFormatString(result, "%d", reader->readInt(isSuccess));
-				} else if(field->m_type == "double") {
-					JMsgAppendFormatString(result, "%f", reader->readDouble(isSuccess));
-				}  else if(field->m_type == "string") {
-					JMsgAppendFormatString(result, "\"%s\"", reader->readString(isSuccess).c_str());
-				} else if(field->m_type == "bool") {
-					JMsgAppendFormatString(result, " %s", reader->readBool(isSuccess) ? "true" : "false");
-				} else {
-					toJson(reader, len, result);
-				}
-				arrayItemWritten = true;
-			}
-			JMsgAppendFormatString(result, "]");
-		}
-
-		currentFieldCount++;
-	} while(true);
-	result.append("}");
-}
-
 #ifdef JMSG_SUPPORT_JSON
-bool JMsgProto::encodeJson( int typeId, rapidjson::Document& doc, rapidjson::Value& obj, JMsgProtoEncodeJsonCallback callback, void* args )
+bool JMsgProto::encodeJson( const std::string& typeName, rapidjson::Document& doc, rapidjson::Value& obj, JMsgProtoEncodeJsonCallback callback, void* args )
 {
-	JMsgType* msgType = this->getTypeById(typeId);
+	JMsgType* msgType = this->getTypeByName(typeName);
 
 	if(!msgType) {
 		return false;
@@ -174,49 +93,7 @@ bool JMsgProto::decodeJson( const string& typeName,  rapidjson::Value& obj, JMsg
         }
         callback(this, field, memIter->value, args);
     }
-
-    /*
-	Json::Value::Members mem = obj.getMemberNames(); 
-	for(size_t i = 0;i < mem.size(); i++) {
-		string& key = mem[i];
-		
-		JMsgField* field = msgType->getFieldByName(key);
-		if(!field) {
-			continue;
-		}		
-		callback(this, field, obj, args);
-	}
-    */
     return true;
 }
 
-bool JMsgProto::decodeJson( int typeId, rapidjson::Value& obj, JMsgProtoDecodeJsonCallback callback, void* args )
-{	
-	JMsgType* msgType = this->getTypeById(typeId);
-
-	if(!msgType) {
-		return false;
-	}
-
-    /*
-	Json::Value::Members mem = obj.getMemberNames(); 
-	for(size_t i = 0;i < mem.size(); i++) {
-		string& key = mem[i];
-
-		JMsgField* field = msgType->getFieldByName(key);
-		if(!field) {
-			continue;
-		}		
-		callback(this, field, obj[key], args);
-	}*/
-    for (auto memIter = obj.MemberBegin(); memIter != obj.MemberEnd(); memIter++) {
-        auto key = memIter->name.GetString();
-        JMsgField* field = msgType->getFieldByName(key);
-        if (!field) {
-            continue;
-        }
-        callback(this, field, memIter->value, args);
-    }
-	return true;
-}
 #endif

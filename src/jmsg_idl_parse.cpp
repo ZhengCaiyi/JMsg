@@ -182,14 +182,14 @@ static char* getField(char* data, JMsgField** pField) {
 
 	data = getEqual(data);
 	if(!data) {
-		return NULL;
+		//return NULL;
 	}
 
 	data = skipEmptyChars(data);
 
 	data = getNumber(data, &fieldId);
 	if(!data) {
-		return NULL;
+		//return NULL;
 	}
 
 	data = skipEmptyChars(data);
@@ -198,7 +198,7 @@ static char* getField(char* data, JMsgField** pField) {
 	field->m_name = fieldName;
 	field->m_type = fieldType;
 	field->m_isArray = isArray;
-	field->m_id = fieldId;
+	//field->m_id = fieldId;
 	*pField = field;
 
 	data = skipComment(data);
@@ -217,13 +217,13 @@ static char* getType(char* data, JMsgType** ppMsgType) {
 	data = skipComment(data);
 	data = getEqual(data);
 	if(!data) {
-		return NULL;
+		//return NULL;
 	}
 
 	data = skipEmptyChars(data);
 	data = getNumber(data, &id);
 	if(NULL == data) {
-		return NULL;
+		//return NULL;
 	}
 	data = skipEmptyChars(data);
 	 data = getLeftBrace(data);
@@ -235,7 +235,6 @@ static char* getType(char* data, JMsgType** ppMsgType) {
 	data = skipComment(data);
 	JMsgType* msgType = new JMsgType;
 	msgType->m_typeName = typeName;
-	msgType->m_id = id;
 	
 	while(*data != '}') {
 		
@@ -282,15 +281,6 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 			printf("duplicate typeName:%s\n", typeName.c_str());
 			return false;
 		}
-
-
-		if(setTypeIds.find(vecMessages[i]->m_id) == setTypeIds.end()) {
-			setTypeIds.insert(vecMessages[i]->m_id);
-		} else {
-
-			printf("%s duplicate fieldId:%d\n", typeName.c_str(), vecMessages[i]->m_id);
-			return false;
-		}
 	}
 
 	for(size_t i = 0; i < vecMessages.size(); i++) {
@@ -305,18 +295,7 @@ static bool checkMessages(std::vector<JMsgType*>& vecMessages) {
 				if(iter == mapTypeNames.end()) {
                     printf("error:type %s not exist!\n", field->m_type.c_str());
 					return false;
-				} else {
-
-					field->m_typeId =  iter->second->m_id;
 				}
-			}
-
-			if(setFieldIds.find(field->m_id) == setFieldIds.end()) {
-				setFieldIds.insert(field->m_id);
-			} else {
-
-                printf("error:type %s, field id %d not exist!\n", field->m_type.c_str(), field->m_id);
-				return false;
 			}
 		}
 	}

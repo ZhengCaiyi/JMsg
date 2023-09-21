@@ -6,7 +6,6 @@ public:
 	std::string m_name;
 	std::string m_type;
 	bool m_isArray;
-	int m_id;
 	int m_typeId;
 };
 #endif
