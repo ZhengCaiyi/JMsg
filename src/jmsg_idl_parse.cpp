@@ -106,7 +106,7 @@ static char* getEqual(char* data) {
 		return data;
 	} else {
 
-		printf("%s:getEqual failed\n", getErrorPos(data).c_str());
+		//printf("%s:getEqual failed\n", getErrorPos(data).c_str());
 		return NULL;
 	}
 }
