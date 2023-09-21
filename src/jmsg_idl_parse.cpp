@@ -250,6 +250,7 @@ static char* getType(char* data, JMsgType** ppMsgType) {
 		
 		if(data) {
 			msgType->m_vecFields.push_back(field);
+			msgType->m_mapFields[field->m_name] = field;
 		} else {
 			break;
 		}
