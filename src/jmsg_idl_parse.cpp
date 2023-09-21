@@ -69,7 +69,7 @@ static char* getLeftBrace(char* data) {
 		data++;
 		return data;
 	} else {
-		printf("%s:getLeftBrace failed", getErrorPos(data).c_str());
+		printf("%s:getLeftBrace failed\n", getErrorPos(data).c_str());
 		return NULL;
 	}
 }
@@ -106,7 +106,7 @@ static char* getEqual(char* data) {
 		return data;
 	} else {
 
-		printf("%s:getEqual failed", getErrorPos(data).c_str());
+		printf("%s:getEqual failed\n", getErrorPos(data).c_str());
 		return NULL;
 	}
 }
@@ -134,7 +134,7 @@ static char* getNumber(char* data, int* number) {
 		return data;
 	} else {
 
-		printf("%s:getNumber failed", getErrorPos(data).c_str());
+		printf("%s:getNumber failed\n", getErrorPos(data).c_str());
 		return NULL;
 	}
 
@@ -180,17 +180,20 @@ static char* getField(char* data, JMsgField** pField) {
 
 	data = skipEmptyChars(data);
 
+	auto oldData = data;
 	data = getEqual(data);
 	if(!data) {
-		//return NULL;
+		data = oldData;
+	} else {
+		data = skipEmptyChars(data);
+
+		data = getNumber(data, &fieldId);
+		if(!data) {
+			return NULL;
+		}
 	}
 
-	data = skipEmptyChars(data);
-
-	data = getNumber(data, &fieldId);
-	if(!data) {
-		//return NULL;
-	}
+	
 
 	data = skipEmptyChars(data);
 
@@ -215,16 +218,20 @@ static char* getType(char* data, JMsgType** ppMsgType) {
 	}
 	data = skipEmptyChars(data);
 	data = skipComment(data);
+
+	auto oldData = data;
+
 	data = getEqual(data);
 	if(!data) {
-		//return NULL;
+		data = oldData;
+	} else {
+		data = skipEmptyChars(data);
+		data = getNumber(data, &id);
+		if(NULL == data) {
+			return nullptr;
+		}
 	}
-
-	data = skipEmptyChars(data);
-	data = getNumber(data, &id);
-	if(NULL == data) {
-		//return NULL;
-	}
+	
 	data = skipEmptyChars(data);
 	 data = getLeftBrace(data);
 	if(NULL == data) {
